@@ -1,0 +1,132 @@
+import { Link } from "@tanstack/react-router";
+import { ArrowRight, MapPin, Search, ShieldCheck, Sparkles } from "lucide-react";
+import heroCity from "@/assets/hero-city.jpg";
+import mapPreview from "@/assets/map-preview.jpg";
+
+export function Hero() {
+  return (
+    <section className="relative overflow-hidden pt-28 pb-16 sm:pt-32 sm:pb-20 md:pt-40 md:pb-28">
+      {/* atmospheric backdrop */}
+      <div className="bg-hero-radial pointer-events-none absolute inset-0" aria-hidden />
+      <div
+        className="pointer-events-none absolute -top-32 right-[-10%] h-[420px] w-[420px] rounded-full bg-[var(--gradient-aurora)] opacity-30 blur-3xl animate-float-slow sm:h-[520px] sm:w-[520px]"
+        aria-hidden
+      />
+
+      <div className="relative mx-auto grid max-w-6xl gap-10 px-5 sm:px-6 md:grid-cols-2 md:items-center md:gap-12">
+        <div className="animate-fade-up">
+          <span className="glass inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-primary" />
+            Built for Redemption City
+          </span>
+          <h1 className="mt-5 text-[2.1rem] font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+            Everything you need in{" "}
+            <span className="text-gradient">Redemption City</span>,
+            <br />
+            All in one app.
+          </h1>
+          <p className="mt-5 max-w-lg text-base text-muted-foreground md:text-lg">
+            Move across the city, order food from camp vendors, find local
+            services and stay safe — all in one beautifully simple app for the
+            Redemption City community.
+          </p>
+
+          {/* search */}
+          <div className="glass mt-7 flex items-center gap-2 rounded-2xl p-2 shadow-soft">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary">
+              <MapPin className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex flex-1 items-center gap-2 pl-1">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <input
+                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                placeholder="Where in Redemption City? e.g. Auditorium 1"
+              />
+            </div>
+            <button className="bg-gradient-primary inline-flex items-center gap-1 rounded-xl px-4 py-2.5 text-sm font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.03]">
+              Go <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* primary CTAs */}
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              to="/signup"
+              className="bg-gradient-primary group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.03]"
+            >
+              Sign up — get started
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <Link
+              to="/signin"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+            >
+              Sign in
+            </Link>
+            <a
+              href="#how"
+              className="inline-flex items-center justify-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              See how it works
+            </a>
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="h-4 w-4 text-success" /> SOS in one tap
+            </span>
+            <span className="hidden sm:inline">·</span>
+            <span>4.9 ★ trust score</span>
+            <span className="hidden sm:inline">·</span>
+            <span>Camp-wide vendors</span>
+          </div>
+        </div>
+
+        {/* visual */}
+        <div className="relative animate-fade-up [animation-delay:120ms]">
+          <div className="relative overflow-hidden rounded-3xl shadow-elegant">
+            <img
+              src={heroCity}
+              alt="Redemption City at dusk"
+              width={1600}
+              height={1200}
+              className="h-[360px] w-full object-cover sm:h-[460px]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent" />
+
+            {/* floating driver card — no vehicle, just driver */}
+            <div className="glass absolute bottom-5 left-5 right-5 rounded-2xl p-3 shadow-soft animate-float-slow sm:right-auto sm:w-[78%]">
+              <div className="flex items-center gap-3">
+                <img
+                  src={mapPreview}
+                  alt="Map"
+                  className="h-16 w-20 shrink-0 rounded-xl object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-foreground/70">
+                    Your driver is arriving
+                  </p>
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    Tunde A.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    3 min · 0.4 km away
+                  </p>
+                </div>
+                <div className="relative grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+                  <span className="absolute inset-0 rounded-full bg-primary/40 animate-pulse-ring" />
+                  <MapPin className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+
+            {/* floating eta chip */}
+            <div className="glass absolute right-5 top-5 rounded-full px-3 py-1.5 text-xs font-medium text-foreground shadow-soft">
+              ETA · 11 min
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

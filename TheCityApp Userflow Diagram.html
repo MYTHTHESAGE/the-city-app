@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F2F0EB;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;padding:0}
+
+/* ── Canvas ── */
+.canvas{position:relative;width:4200px;padding:80px 80px 120px 80px}
+
+/* ── Section labels ── */
+.section-label{position:absolute;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#fff;padding:5px 14px;border-radius:4px}
+
+/* ── Screen cards ── */
+.card{position:absolute;background:#fff;border-radius:10px;padding:10px 13px;box-shadow:0 1px 6px rgba(0,0,0,.10);font-size:10.5px;line-height:1.55}
+.card-title{font-size:11.5px;font-weight:700;margin-bottom:5px;padding-bottom:5px;border-bottom:1.5px solid #f0f0f0}
+.card ul{list-style:none;color:#555}
+.card ul li{padding:1.5px 0}
+.card ul li:before{content:"· ";color:#bbb}
+.card-note{font-size:9.5px;color:#888;margin-top:5px;padding-top:5px;border-top:1px dashed #eee;line-height:1.4}
+
+/* ── Chips ── */
+.chip{display:inline-block;padding:2px 9px;border-radius:12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.c-green{background:#2aa68a;color:#fff}
+.c-blue{background:#3a7bd5;color:#fff}
+.c-purple{background:#7c4dbd;color:#fff}
+.c-orange{background:#c26830;color:#fff}
+.c-red{background:#c03030;color:#fff}
+.c-gray{background:#666;color:#fff}
+
+/* ── Swimlane frames ── */
+.lane{position:absolute;border-radius:14px;padding:14px}
+.lane-entry{background:#E6F4F0;border:1.5px solid #7ec8b4}
+.lane-user{background:#E6EEF8;border:1.5px solid #7aaad8}
+.lane-vendor{background:#EDE8F5;border:1.5px solid #a98dd0}
+.lane-transport{background:#FAF0E6;border:1.5px solid #d4905a}
+.lane-emergency{background:#FCE8E8;border:1.5px solid #d46060}
+.lane-ia{background:#F8F5E0;border:1.5px dashed #c8b860}
+.lane-title{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;opacity:.65}
+
+/* ── Sticky notes ── */
+.sticky{position:absolute;border-radius:5px;padding:9px 11px;font-size:9.5px;line-height:1.55;box-shadow:0 1px 5px rgba(0,0,0,.10)}
+.s-yellow{background:#FFF59D;color:#4a4000}
+.s-red{background:#FFCDD2;color:#5c0000}
+.s-blue{background:#B3E5FC;color:#003060}
+.s-green{background:#C8F7C5;color:#145214}
+.s-orange{background:#FFE0B2;color:#5c2800}
+
+/* ── SVG arrows (full canvas overlay) ── */
+svg.flowlines{position:absolute;top:0;left:0;pointer-events:none;overflow:visible}
+</style>
+</head>
+<body>
+<div class="canvas" id="c">
+
+<!-- ════════════════════════════════════════════════════
+     PAGE HEADER
+════════════════════════════════════════════════════ -->
+<div style="position:absolute;left:80px;top:24px;font-size:28px;font-weight:900;color:#1a1a1a;letter-spacing:-.5px">The City App</div>
+<div style="position:absolute;left:82px;top:60px;font-size:12px;color:#888;letter-spacing:.04em">UI Flow · Information Architecture · Screen Breakdown — v1.0</div>
+
+<!-- ════════════════════════════════════════════════════
+     ROW 1: ONBOARDING
+════════════════════════════════════════════════════ -->
+<div class="lane lane-entry" style="left:80px;top:110px;width:3580px;height:250px">
+  <div class="lane-title" style="color:#2aa68a">01 — Onboarding &amp; Role Selection</div>
+
+  <!-- Landing -->
+  <div class="card" id="c-land" style="left:20px;top:40px;width:185px">
+    <div class="card-title"><span class="chip c-green">Shared</span><br>Landing Page</div>
+    <ul><li>App name &amp; tagline</li><li>Sign Up (primary CTA)</li><li>Sign In (secondary CTA)</li><li>Role descriptions</li></ul>
+  </div>
+
+  <!-- Role Select -->
+  <div class="card" id="c-role" style="left:250px;top:40px;width:185px">
+    <div class="card-title">Role Selection</div>
+    <ul><li><b>User</b> — resident / visitor</li><li><b>Service Provider</b></li></ul>
+    <div class="card-note">SP sub-screen: Vendor or Transport &amp; Logistics</div>
+  </div>
+
+  <!-- User Reg -->
+  <div class="card" id="c-ureg" style="left:490px;top:20px;width:200px">
+    <div class="card-title"><span class="chip c-blue">User</span> Registration</div>
+    <ul><li>Full name</li><li>Phone number</li><li>Email address</li><li>Create password</li><li>Residential address</li><li>Blood type</li><li>Allergies</li><li>Emergency contact</li><li>Health type</li></ul>
+  </div>
+
+  <!-- SP Sub-Role -->
+  <div class="card" id="c-sprole" style="left:490px;top:155px;width:200px">
+    <div class="card-title">SP Sub-Role</div>
+    <ul><li><b>Vendor</b> — shop / business</li><li><b>Transport &amp; Logistics</b></li></ul>
+    <div class="card-note">Routes to respective registration screen</div>
+  </div>
+
+  <!-- Vendor Reg Step 1 -->
+  <div class="card" id="c-vreg1" style="left:740px;top:155px;width:200px">
+    <div class="card-title"><span class="chip c-purple">Vendor</span> Reg — Step 1</div>
+    <ul><li>Business name</li><li>Owner name &amp; contact</li><li>Phone / email</li><li>Create password</li><li>Business address</li><li>Operating hours</li><li>Business category</li></ul>
+  </div>
+
+  <!-- Vendor Reg Step 2 -->
+  <div class="card" id="c-vreg2" style="left:990px;top:155px;width:200px">
+    <div class="card-title"><span class="chip c-purple">Vendor</span> Reg — Step 2</div>
+    <ul><li>Business logo upload</li><li>Backdrop / cover image</li><li>Location pin on map</li><li>Short description</li></ul>
+    <div class="card-note">Optional at sign-up. Completable later via Settings.</div>
+  </div>
+
+  <!-- Transport Reg -->
+  <div class="card" id="c-treg" style="left:740px;top:20px;width:200px">
+    <div class="card-title"><span class="chip c-orange">Transport</span> Registration</div>
+    <ul><li>Full name &amp; contact</li><li>Phone / email</li><li>Create password</li><li>Vehicle type</li><li>License plate</li><li>Association / company ID</li><li>City permit (if applicable)</li></ul>
+  </div>
+
+  <!-- OTP -->
+  <div class="card" id="c-otp" style="left:1240px;top:40px;width:195px">
+    <div class="card-title">OTP Verification</div>
+    <ul><li>Email or SMS code sent</li><li>6-digit input field</li><li>Resend code option</li><li>Expiry countdown timer</li></ul>
+    <div class="card-note" style="color:#c26830">⚠ Required before dashboard access</div>
+  </div>
+
+  <!-- Sign In -->
+  <div class="card" id="c-signin" style="left:1490px;top:40px;width:195px">
+    <div class="card-title">Sign In (Returning)</div>
+    <ul><li>Email / phone</li><li>Password</li><li>Forgot password link</li></ul>
+    <div class="card-note">Forgot password → Email/SMS code → Reset → New password → Sign in</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ROW 2: USER JOURNEY
+════════════════════════════════════════════════════ -->
+<div class="lane lane-user" style="left:80px;top:400px;width:3580px;height:860px">
+  <div class="lane-title" style="color:#3a7bd5">02 — User Journey (Resident / Visitor)</div>
+
+  <!-- Dashboard -->
+  <div class="card" id="u-dash" style="left:20px;top:45px;width:185px">
+    <div class="card-title"><span class="chip c-blue">User</span> Dashboard</div>
+    <ul><li>Food Order</li><li>Ride / Delivery</li><li>Emergency</li><li>Wallet (placeholder)</li><li>Favourites</li><li>Settings</li></ul>
+  </div>
+
+  <!-- ── Food Order flow ── -->
+  <div class="card" id="u-browse" style="left:260px;top:20px;width:175px">
+    <div class="card-title">Browse Vendors</div>
+    <ul><li>Search &amp; filter</li><li>Category tabs</li><li>Vendor cards (name, rating, ETA)</li><li>Tap vendor to open</li></ul>
+  </div>
+  <div class="card" id="u-menu" style="left:485px;top:20px;width:175px">
+    <div class="card-title">Vendor Menu</div>
+    <ul><li>Product listing</li><li>Add to cart</li><li>Quantity control</li><li>Vendor info (rating, hours)</li></ul>
+  </div>
+  <div class="card" id="u-cart" style="left:710px;top:20px;width:175px">
+    <div class="card-title">Cart &amp; Checkout</div>
+    <ul><li>Order summary</li><li>Delivery address confirm</li><li>Payment method</li><li>Apply coupon</li><li>Place Order CTA</li></ul>
+  </div>
+  <div class="card" id="u-track" style="left:935px;top:20px;width:175px">
+    <div class="card-title">Order Tracking</div>
+    <ul><li>Live map view</li><li>Order status updates</li><li>Estimated arrival</li><li>Cancel / contact vendor</li></ul>
+  </div>
+  <div class="card" id="u-done" style="left:1160px;top:20px;width:175px">
+    <div class="card-title">Order Complete</div>
+    <ul><li>Confirmation summary</li><li>Rate vendor (stars)</li><li>Re-order shortcut</li></ul>
+  </div>
+
+  <!-- ── Ride / Delivery flow ── -->
+  <div class="card" id="u-rmap" style="left:260px;top:300px;width:195px">
+    <div class="card-title">Request Ride / Delivery</div>
+    <ul><li>Live map view</li><li>Set pickup location</li><li>Set destination</li><li>Estimated fare shown</li><li>Nearest providers on map</li><li>Confirm request</li></ul>
+    <div class="card-note" style="color:#3a7bd5">Map shows user + nearest transport providers</div>
+  </div>
+  <div class="card" id="u-match" style="left:510px;top:300px;width:175px">
+    <div class="card-title">Provider Matched</div>
+    <ul><li>Provider name &amp; rating</li><li>Vehicle info</li><li>ETA to pickup</li><li>Live tracking begins</li></ul>
+  </div>
+  <div class="card" id="u-ride" style="left:735px;top:300px;width:175px">
+    <div class="card-title">Ride in Progress</div>
+    <ul><li>Live navigation map</li><li>Driver info card</li><li>ETA display</li><li>Cancel ride option</li><li>Emergency access</li></ul>
+  </div>
+  <div class="card" id="u-post" style="left:960px;top:300px;width:175px">
+    <div class="card-title">Post-Ride Summary</div>
+    <ul><li>Fare summary</li><li>Rate driver (stars)</li><li>Tip option</li><li>Digital receipt</li></ul>
+  </div>
+
+  <!-- ── Emergency flow ── -->
+  <div class="card" id="u-e1" style="left:260px;top:590px;width:195px">
+    <div class="card-title" style="color:#c03030">Step 1 — Emergency Tap</div>
+    <ul><li>Full-screen confirmation overlay</li><li>Large emergency button</li><li>Back / cancel option</li></ul>
+    <div class="card-note" style="color:#c03030">Live location captured at this step</div>
+  </div>
+  <div class="card" id="u-e2" style="left:510px;top:590px;width:175px">
+    <div class="card-title" style="color:#c03030">Step 2 — Select Type</div>
+    <ul><li>🔴 Health issue</li><li>🟡 Security issue</li></ul>
+    <div class="card-note">Routes alert to correct emergency team</div>
+  </div>
+  <div class="card" id="u-e3" style="left:735px;top:590px;width:195px">
+    <div class="card-title" style="color:#c03030">Step 3 — Confirm Alert</div>
+    <ul><li>Alert type + location shown</li><li>Large CONFIRM button</li><li>Cancel / go back</li></ul>
+    <div class="card-note" style="color:#c03030">Alert + live location sent on confirm</div>
+  </div>
+  <div class="sticky s-red" style="left:980px;top:580px;width:210px">
+    <b>After confirm:</b><br>
+    Health → Health team dashboard (ambulance dispatch)<br>
+    Security → Security team dashboard (officer dispatch)<br>
+    Location available even if call unanswered
+  </div>
+
+  <!-- Wallet / Favourites / Settings -->
+  <div class="card" id="u-wallet" style="left:1400px;top:45px;width:175px">
+    <div class="card-title"><span class="chip c-gray">Placeholder</span><br>Wallet</div>
+    <ul><li>Balance display shell</li><li>Top-up entry point</li><li>Transaction history (v2)</li></ul>
+    <div class="card-note">Payment logic deferred to v2</div>
+  </div>
+  <div class="card" id="u-fav" style="left:1400px;top:240px;width:175px">
+    <div class="card-title">Favourites</div>
+    <ul><li>Saved vendors</li><li>Saved routes</li><li>Quick re-order</li></ul>
+  </div>
+  <div class="card" id="u-set" style="left:1400px;top:430px;width:175px">
+    <div class="card-title">User Settings</div>
+    <ul><li>Edit profile</li><li>Notification preferences</li><li>Privacy &amp; location</li><li>Password change</li><li>Logout</li></ul>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ROW 3: VENDOR JOURNEY
+════════════════════════════════════════════════════ -->
+<div class="lane lane-vendor" style="left:80px;top:1310px;width:3580px;height:580px">
+  <div class="lane-title" style="color:#7c4dbd">03 — Vendor Journey (Business / Shop)</div>
+
+  <!-- Dashboard -->
+  <div class="card" id="v-dash" style="left:20px;top:45px;width:185px">
+    <div class="card-title"><span class="chip c-purple">Vendor</span> Dashboard</div>
+    <ul><li>Today's Sales</li><li>Active orders count</li><li>Ratings overview</li><li>Products</li><li>Orders</li><li>Settings</li></ul>
+  </div>
+
+  <div class="card" id="v-sales" style="left:255px;top:45px;width:185px">
+    <div class="card-title">Today's Sales</div>
+    <ul><li>Revenue today</li><li>Order count</li><li>Top selling items</li><li>Weekly sales chart</li></ul>
+  </div>
+  <div class="card" id="v-orders" style="left:490px;top:45px;width:200px">
+    <div class="card-title">Orders</div>
+    <ul><li>Incoming orders list</li><li>Accept / decline</li><li>Order detail view</li><li>Set closing price</li><li>Assign delivery</li><li>Status: pending → confirmed → delivered</li></ul>
+  </div>
+  <div class="card" id="v-products" style="left:740px;top:45px;width:195px">
+    <div class="card-title">Products</div>
+    <ul><li>Product catalogue list</li><li>Add new product</li><li>Edit existing product</li><li>Delete product</li><li>Toggle availability on/off</li></ul>
+  </div>
+  <div class="card" id="v-ratings" style="left:985px;top:45px;width:185px">
+    <div class="card-title">Ratings &amp; Reviews</div>
+    <ul><li>Average star rating</li><li>Individual customer reviews</li><li>Reply to review</li></ul>
+  </div>
+  <div class="card" id="v-upload" style="left:1220px;top:45px;width:195px">
+    <div class="card-title">Product Upload</div>
+    <ul><li>Vendor type (food/goods/service)</li><li>Product name</li><li>Price</li><li>Product image</li><li>Description</li><li>Availability toggle</li></ul>
+    <div class="card-note">Accessible from Products screen (New / Edit / Delete)</div>
+  </div>
+  <div class="card" id="v-set" style="left:1465px;top:45px;width:185px">
+    <div class="card-title">Vendor Settings</div>
+    <ul><li>Edit profile &amp; storefront</li><li>Update operating hours</li><li>Notification preferences</li><li>Password change</li><li>Logout</li></ul>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ROW 4: TRANSPORT JOURNEY
+════════════════════════════════════════════════════ -->
+<div class="lane lane-transport" style="left:80px;top:1940px;width:3580px;height:600px">
+  <div class="lane-title" style="color:#c26830">04 — Transport &amp; Logistics Journey (Service Provider)</div>
+
+  <!-- Dashboard -->
+  <div class="card" id="t-dash" style="left:20px;top:45px;width:185px">
+    <div class="card-title"><span class="chip c-orange">Transport</span> Dashboard</div>
+    <ul><li>Today's Earnings</li><li>Today's Trips</li><li>Ratings</li><li>Ride Requests</li><li>Delivery Requests</li><li>My Location (map)</li><li>Online / Offline toggle</li><li>Settings</li></ul>
+  </div>
+
+  <div class="card" id="t-req" style="left:255px;top:45px;width:210px">
+    <div class="card-title">Incoming Request</div>
+    <ul><li>Request type: Ride / Delivery</li><li>User pickup on map</li><li>Destination shown</li><li>Estimated distance &amp; fare</li><li>Accept / Decline</li></ul>
+    <div class="card-note" style="color:#c26830">Map shows user location + provider location simultaneously</div>
+  </div>
+  <div class="card" id="t-inprog" style="left:515px;top:45px;width:195px">
+    <div class="card-title">Trip / Delivery In Progress</div>
+    <ul><li>Live navigation map</li><li>User contact option</li><li>Mark as arrived</li><li>Complete trip / delivery</li><li>Emergency access</li></ul>
+  </div>
+  <div class="card" id="t-done" style="left:760px;top:45px;width:185px">
+    <div class="card-title">Trip Complete</div>
+    <ul><li>Fare / earnings summary</li><li>Rating received</li><li>Next request prompt</li></ul>
+  </div>
+  <div class="card" id="t-hist" style="left:995px;top:45px;width:185px">
+    <div class="card-title">Trip History</div>
+    <ul><li>List of completed trips</li><li>Earnings per trip</li><li>Rating received</li><li>Date &amp; time</li></ul>
+  </div>
+  <div class="card" id="t-earn" style="left:1230px;top:45px;width:185px">
+    <div class="card-title">Earnings</div>
+    <ul><li>Today's total</li><li>Weekly breakdown chart</li><li>Payout request (placeholder)</li></ul>
+  </div>
+  <div class="card" id="t-set" style="left:1465px;top:45px;width:185px">
+    <div class="card-title">Transport Settings</div>
+    <ul><li>Edit profile</li><li>Update vehicle details</li><li>Availability toggle</li><li>Notification preferences</li><li>Password change</li><li>Logout</li></ul>
+  </div>
+
+  <div class="sticky s-orange" style="left:255px;top:340px;width:445px">
+    <b>Unified provider profile:</b> One registration covers both ride-hail and delivery. No separate apps. Request type determines the flow at acceptance. Provider can toggle online/offline from dashboard.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ROW 5: EMERGENCY PERSONNEL
+════════════════════════════════════════════════════ -->
+<div class="lane lane-emergency" style="left:80px;top:2590px;width:3580px;height:620px">
+  <div class="lane-title" style="color:#c03030">05 — Emergency Personnel Dashboard (Health &amp; Security — Separate Access)</div>
+
+  <div class="sticky s-red" style="left:20px;top:40px;width:220px">
+    <b>Separate access path.</b><br>
+    Emergency personnel do NOT use public sign-up. Access provisioned by city/org admin via dedicated credentials. Health team and security team are separate audiences.
+  </div>
+
+  <div class="card" id="e-dash" style="left:260px;top:45px;width:200px">
+    <div class="card-title"><span class="chip c-red">Emergency</span> Dashboard</div>
+    <ul><li>Registered users count</li><li>Active alerts live feed</li><li>Send broadcast alert</li><li>Health info directory</li><li>Contact directory</li></ul>
+  </div>
+  <div class="card" id="e-feed" style="left:510px;top:45px;width:225px">
+    <div class="card-title">Active Alerts Feed</div>
+    <ul><li>Alert type: 🔴 Health / 🟡 Security</li><li>User name (if available)</li><li>Time alert was sent</li><li>Live location pin (tap → map)</li><li>Status: New / Acknowledged / Resolved</li></ul>
+    <div class="card-note" style="color:#c03030">Health alerts → health team only. Security alerts → security team only.</div>
+  </div>
+  <div class="card" id="e-detail" style="left:785px;top:45px;width:240px">
+    <div class="card-title">Alert Detail</div>
+    <ul><li>User contact details</li><li>Health profile (blood type, allergies)</li><li>Live location on map</li><li>Direct call button</li><li>Mark Acknowledged / Resolved</li><li>Add notes / dispatch log</li></ul>
+    <div class="card-note">If no call response → use live location to physically dispatch</div>
+  </div>
+  <div class="card" id="e-broadcast" style="left:1075px;top:45px;width:200px">
+    <div class="card-title">Send Broadcast Alert</div>
+    <ul><li>Alert type (health / security / general)</li><li>Compose message</li><li>Target: all users / specific area</li><li>Confirm &amp; send</li></ul>
+  </div>
+  <div class="card" id="e-dir" style="left:1325px;top:45px;width:215px">
+    <div class="card-title">Health Info Directory</div>
+    <ul><li>Search by name / user ID</li><li>Blood type, allergies, health type</li><li>Emergency contact details</li></ul>
+    <div class="card-note">Read-only. Accessible only after credentials verified.</div>
+  </div>
+  <div class="card" id="e-users" style="left:1590px;top:45px;width:200px">
+    <div class="card-title">Registered Users</div>
+    <ul><li>Total registered count</li><li>User list (name, contact, area)</li><li>Filter by location / status</li></ul>
+  </div>
+
+  <div class="sticky s-red" style="left:260px;top:360px;width:1530px;padding:12px 16px;font-size:9.5px">
+    <b>Full alert routing:</b> User taps Emergency (Step 1 — live location captured) → selects Health or Security (Step 2) → confirms (Step 3) → alert + location auto-sent.
+    Health alert → pushed to Health team dashboard with push notification. Personnel opens alert → views health profile (blood type, allergies) + live map → calls user → dispatches ambulance.
+    Security alert → pushed to Security team dashboard. Officer calls user. If no answer → uses live location to dispatch physically.
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ROW 6: INFORMATION ARCHITECTURE
+════════════════════════════════════════════════════ -->
+<div class="lane lane-ia" style="left:80px;top:3270px;width:3580px;height:1120px">
+  <div class="lane-title" style="color:#a08020">06 — Information Architecture (Full Hierarchy)</div>
+
+  <!-- ROOT -->
+  <div class="card" id="ia-root" style="left:1740px;top:30px;width:200px;text-align:center;border:2px solid #c8b860">
+    <div class="card-title" style="text-align:center;font-size:13px">🏙 The City App</div>
+    <div style="font-size:9.5px;color:#888;text-align:center">Root</div>
+  </div>
+
+  <!-- L1 -->
+  <div class="card" id="ia-onboard" style="left:60px;top:170px;width:180px">
+    <div class="card-title">Onboarding</div>
+    <ul><li>Landing page</li><li>Role selection</li><li>Registration (per role)</li><li>OTP verification</li><li>Sign in / password reset</li></ul>
+  </div>
+  <div class="card" id="ia-udash" style="left:460px;top:170px;width:175px">
+    <div class="card-title" style="color:#3a7bd5">User Dashboard</div>
+    <ul><li>Food Order</li><li>Ride / Delivery</li><li>Emergency</li><li>Wallet</li><li>Favourites</li><li>Settings</li></ul>
+  </div>
+  <div class="card" id="ia-vdash" style="left:840px;top:170px;width:175px">
+    <div class="card-title" style="color:#7c4dbd">Vendor Dashboard</div>
+    <ul><li>Today's Sales</li><li>Orders</li><li>Products</li><li>Ratings</li><li>Settings</li></ul>
+  </div>
+  <div class="card" id="ia-tdash" style="left:1210px;top:170px;width:175px">
+    <div class="card-title" style="color:#c26830">Transport Dashboard</div>
+    <ul><li>Earnings</li><li>Trips</li><li>Requests</li><li>Ratings</li><li>Settings</li></ul>
+  </div>
+  <div class="card" id="ia-edash" style="left:1585px;top:170px;width:175px">
+    <div class="card-title" style="color:#c03030">Emergency Dashboard</div>
+    <ul><li>Active alerts</li><li>Broadcast alert</li><li>Health directory</li><li>User registry</li></ul>
+  </div>
+
+  <!-- L2 -->
+  <div class="card" id="ia-food" style="left:20px;top:440px;width:165px">
+    <div class="card-title" style="color:#3a7bd5">Food Order Flow</div>
+    <ul><li>Browse vendors</li><li>Vendor menu</li><li>Cart &amp; checkout</li><li>Address confirm</li><li>Payment</li><li>Order tracking</li><li>Complete + rate</li></ul>
+  </div>
+  <div class="card" id="ia-ride" style="left:200px;top:440px;width:165px">
+    <div class="card-title" style="color:#3a7bd5">Ride / Delivery Flow</div>
+    <ul><li>Map (pickup + dest)</li><li>Nearest providers</li><li>Confirm request</li><li>Provider matched</li><li>Live tracking</li><li>Post-trip + rate</li></ul>
+  </div>
+  <div class="card" id="ia-emflow" style="left:380px;top:440px;width:165px">
+    <div class="card-title" style="color:#c03030">Emergency Flow</div>
+    <ul><li>Step 1: Tap (location captured)</li><li>Step 2: Health / Security</li><li>Step 3: Confirm</li><li>→ Alert + location sent</li><li>→ Auto-routed to team</li></ul>
+  </div>
+  <div class="card" id="ia-wallet" style="left:560px;top:440px;width:165px">
+    <div class="card-title" style="color:#666">Wallet (v1 Placeholder)</div>
+    <ul><li>Balance display shell</li><li>Top-up entry</li><li>Transaction history (v2)</li></ul>
+  </div>
+  <div class="card" id="ia-vorders" style="left:740px;top:440px;width:165px">
+    <div class="card-title" style="color:#7c4dbd">Vendor Orders</div>
+    <ul><li>Incoming list</li><li>Accept / decline</li><li>Closing price</li><li>Delivery assignment</li><li>Status tracking</li></ul>
+  </div>
+  <div class="card" id="ia-vprod" style="left:920px;top:440px;width:165px">
+    <div class="card-title" style="color:#7c4dbd">Product Management</div>
+    <ul><li>Add / Edit / Delete</li><li>Image upload</li><li>Availability toggle</li><li>Vendor type tag</li></ul>
+  </div>
+  <div class="card" id="ia-treq" style="left:1100px;top:440px;width:175px">
+    <div class="card-title" style="color:#c26830">Request Handling</div>
+    <ul><li>Incoming alert</li><li>Map: user + provider</li><li>Accept / Decline</li><li>Navigation mode</li><li>Complete trip</li></ul>
+  </div>
+  <div class="card" id="ia-ealert" style="left:1285px;top:440px;width:175px">
+    <div class="card-title" style="color:#c03030">Alert Detail</div>
+    <ul><li>User health profile</li><li>Live map</li><li>Direct call</li><li>Dispatch log</li><li>Status update</li></ul>
+  </div>
+  <div class="card" id="ia-ehdir" style="left:1470px;top:440px;width:175px">
+    <div class="card-title" style="color:#c03030">Health Directory</div>
+    <ul><li>Search user</li><li>View health profile</li><li>Emergency contacts</li></ul>
+  </div>
+
+  <!-- Design decisions -->
+  <div class="sticky s-yellow" style="left:20px;top:720px;width:380px">
+    <b>Role split logic:</b> Sign Up → User vs Service Provider (1 prompt). SP → Vendor vs Transport (2nd prompt). Only relevant fields shown per role. Lean onboarding.
+  </div>
+  <div class="sticky s-green" style="left:420px;top:720px;width:380px">
+    <b>Emergency 3-step design:</b> Location captured at Step 1 (before confirmation) — maximises response time even if user abandons the flow. 3 taps prevent accidental triggers.
+  </div>
+  <div class="sticky s-blue" style="left:820px;top:720px;width:380px">
+    <b>Map screens:</b> User sees nearest transport providers before confirming a request. Transport sees both their location and user's pickup simultaneously. Mirrors Uber/Bolt UX.
+  </div>
+  <div class="sticky s-orange" style="left:1220px;top:720px;width:380px">
+    <b>Vendor onboarding:</b> Step 1 required (basic info). Step 2 optional (storefront). Vendors go live immediately after Step 1. Storefront completed later via Settings.
+  </div>
+
+  <!-- Future scope -->
+  <div class="sticky s-red" style="left:20px;top:900px;width:1580px;padding:12px 16px;font-size:9.5px">
+    <b>Future scope (v2+):</b> &nbsp;
+    Wallet payment logic &amp; integration · Vendor payout system · Transport background verification flow · Admin panel for city/org credential provisioning · Push notification infrastructure · Multi-language support · Accessibility (screen reader, font scaling) · Rating moderation tools · City operator analytics dashboard
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     SVG FLOW LINES
+════════════════════════════════════════════════════ -->
+<svg class="flowlines" id="svg-lines" width="4200" height="5000">
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M1 1L9 5L1 9" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M1 1L9 5L1 9" fill="none" stroke="#3a7bd5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M1 1L9 5L1 9" fill="none" stroke="#7c4dbd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M1 1L9 5L1 9" fill="none" stroke="#c26830" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M1 1L9 5L1 9" fill="none" stroke="#c03030" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arr-ia" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M1 1L9 5L1 9" fill="none" stroke="#a08020" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+</svg>
+
+</div>
+
+<script>
+// Wait for layout, then draw arrows between cards
+window.onload = function() {
+  const svg = document.getElementById('svg-lines');
+  const canvas = document.getElementById('c');
+
+  function pos(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    const cr = canvas.getBoundingClientRect();
+    return {
+      x: r.left - cr.left, y: r.top - cr.top,
+      w: r.width, h: r.height,
+      cx: r.left - cr.left + r.width/2,
+      cy: r.top - cr.top + r.height/2,
+      right: r.left - cr.left + r.width,
+      bottom: r.top - cr.top + r.height,
+      top: r.top - cr.top,
+      left: r.left - cr.left
+    };
+  }
+
+  function arrow(fromId, toId, color, fromEdge, toEdge, curvature) {
+    const f = pos(fromId), t = pos(toId);
+    if (!f || !t) return;
+    color = color || '#999';
+    fromEdge = fromEdge || 'right';
+    toEdge = toEdge || 'left';
+    const mkr = color === '#3a7bd5' ? 'arr-blue' : color === '#7c4dbd' ? 'arr-purple' : color === '#c26830' ? 'arr-orange' : color === '#c03030' ? 'arr-red' : color === '#a08020' ? 'arr-ia' : 'arr';
+
+    let x1,y1,x2,y2;
+    if (fromEdge==='right'){x1=f.right;y1=f.cy}
+    else if(fromEdge==='bottom'){x1=f.cx;y1=f.bottom}
+    else if(fromEdge==='left'){x1=f.left;y1=f.cy}
+    else{x1=f.cx;y1=f.top}
+
+    if(toEdge==='left'){x2=t.left;y2=t.cy}
+    else if(toEdge==='top'){x2=t.cx;y2=t.top}
+    else if(toEdge==='right'){x2=t.right;y2=t.cy}
+    else{x2=t.cx;y2=t.bottom}
+
+    const mx = (x1+x2)/2;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    let d;
+    if(fromEdge==='right' && toEdge==='left'){
+      d = `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+    } else if(fromEdge==='bottom' && toEdge==='top'){
+      const my = (y1+y2)/2;
+      d = `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`;
+    } else {
+      d = `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+    }
+    path.setAttribute('d', d);
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width','1.8');
+    path.setAttribute('marker-end',`url(#${mkr})`);
+    svg.appendChild(path);
+  }
+
+  // ── ONBOARDING FLOW (green/gray) ──
+  arrow('c-land','c-role','#2aa68a');
+  arrow('c-role','c-ureg','#3a7bd5');
+  arrow('c-role','c-sprole','#888','right','left');
+  arrow('c-sprole','c-vreg1','#7c4dbd');
+  arrow('c-vreg1','c-vreg2','#7c4dbd');
+  arrow('c-sprole','c-treg','#c26830','top','bottom');
+  arrow('c-ureg','c-otp','#2aa68a');
+  arrow('c-vreg2','c-otp','#2aa68a','right','left');
+  arrow('c-treg','c-otp','#2aa68a','right','left');
+  arrow('c-otp','c-signin','#2aa68a');
+
+  // ── USER JOURNEY (blue) ──
+  // Dashboard to Food
+  arrow('u-dash','u-browse','#3a7bd5');
+  arrow('u-browse','u-menu','#3a7bd5');
+  arrow('u-menu','u-cart','#3a7bd5');
+  arrow('u-cart','u-track','#3a7bd5');
+  arrow('u-track','u-done','#3a7bd5');
+  // Dashboard to Ride
+  arrow('u-dash','u-rmap','#3a7bd5','right','left');
+  arrow('u-rmap','u-match','#3a7bd5');
+  arrow('u-match','u-ride','#3a7bd5');
+  arrow('u-ride','u-post','#3a7bd5');
+  // Dashboard to Emergency
+  arrow('u-dash','u-e1','#c03030','right','left');
+  arrow('u-e1','u-e2','#c03030');
+  arrow('u-e2','u-e3','#c03030');
+  // Dashboard to Wallet/Fav/Settings
+  arrow('u-dash','u-wallet','#3a7bd5','right','left');
+  arrow('u-dash','u-fav','#3a7bd5','right','left');
+  arrow('u-dash','u-set','#3a7bd5','right','left');
+
+  // ── VENDOR JOURNEY (purple) ──
+  arrow('v-dash','v-sales','#7c4dbd');
+  arrow('v-dash','v-orders','#7c4dbd','right','left');
+  arrow('v-dash','v-products','#7c4dbd','right','left');
+  arrow('v-dash','v-ratings','#7c4dbd','right','left');
+  arrow('v-products','v-upload','#7c4dbd');
+  arrow('v-dash','v-set','#7c4dbd','right','left');
+
+  // ── TRANSPORT JOURNEY (orange) ──
+  arrow('t-dash','t-req','#c26830');
+  arrow('t-req','t-inprog','#c26830');
+  arrow('t-inprog','t-done','#c26830');
+  arrow('t-done','t-hist','#c26830');
+  arrow('t-dash','t-earn','#c26830','right','left');
+  arrow('t-dash','t-set','#c26830','right','left');
+
+  // ── EMERGENCY JOURNEY (red) ──
+  arrow('e-dash','e-feed','#c03030');
+  arrow('e-feed','e-detail','#c03030');
+  arrow('e-dash','e-broadcast','#c03030','right','left');
+  arrow('e-dash','e-dir','#c03030','right','left');
+  arrow('e-dash','e-users','#c03030','right','left');
+
+  // ── ONBOARDING → DASHBOARDS (vertical) ──
+  arrow('c-signin','u-dash','#3a7bd5','bottom','top');
+  arrow('c-signin','v-dash','#7c4dbd','bottom','top');
+  arrow('c-signin','t-dash','#c26830','bottom','top');
+
+  // ── IA ARROWS (amber) ──
+  arrow('ia-root','ia-onboard','#a08020','bottom','top');
+  arrow('ia-root','ia-udash','#a08020','bottom','top');
+  arrow('ia-root','ia-vdash','#a08020','bottom','top');
+  arrow('ia-root','ia-tdash','#a08020','bottom','top');
+  arrow('ia-root','ia-edash','#a08020','bottom','top');
+
+  arrow('ia-udash','ia-food','#3a7bd5','bottom','top');
+  arrow('ia-udash','ia-ride','#3a7bd5','bottom','top');
+  arrow('ia-udash','ia-emflow','#c03030','bottom','top');
+  arrow('ia-udash','ia-wallet','#3a7bd5','bottom','top');
+
+  arrow('ia-vdash','ia-vorders','#7c4dbd','bottom','top');
+  arrow('ia-vdash','ia-vprod','#7c4dbd','bottom','top');
+
+  arrow('ia-tdash','ia-treq','#c26830','bottom','top');
+
+  arrow('ia-edash','ia-ealert','#c03030','bottom','top');
+  arrow('ia-edash','ia-ehdir','#c03030','bottom','top');
+
+  // Update SVG canvas size
+  const bounds = canvas.getBoundingClientRect();
+  svg.setAttribute('width', canvas.scrollWidth);
+  svg.setAttribute('height', canvas.scrollHeight);
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ──────────────────────────────────────────────────────────
+   The City App — Design System
+   Inspired by RCCG palette (deep blue + red accent), DM Sans
+   ────────────────────────────────────────────────────────── */
+
+@theme inline {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+  --radius-3xl: calc(var(--radius) + 18px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-glow: var(--primary-glow);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-emergency: var(--emergency);
+  --color-emergency-foreground: var(--emergency-foreground);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --radius: 0.875rem;
+
+  /* RCCG-inspired: deep navy/royal blue, gold-cream, red accent */
+  --background: oklch(0.992 0.003 250);          /* ghost white */
+  --foreground: oklch(0.18 0.03 260);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.03 260);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.03 260);
+
+  /* RCCG royal blue */
+  --primary: oklch(0.42 0.18 262);
+  --primary-foreground: oklch(0.98 0.005 250);
+  --primary-glow: oklch(0.62 0.20 258);
+
+  --secondary: oklch(0.965 0.008 250);
+  --secondary-foreground: oklch(0.22 0.04 260);
+
+  --muted: oklch(0.965 0.008 250);
+  --muted-foreground: oklch(0.50 0.02 258);
+
+  --accent: oklch(0.94 0.04 90);                 /* soft gold from RCCG */
+  --accent-foreground: oklch(0.25 0.05 260);
+
+  --destructive: oklch(0.58 0.24 27);
+  --destructive-foreground: oklch(0.98 0.005 250);
+
+  /* Reserved exclusively for SOS / emergency */
+  --emergency: oklch(0.56 0.25 25);
+  --emergency-foreground: oklch(0.99 0.005 25);
+
+  --success: oklch(0.65 0.16 155);
+
+  --border: oklch(0.92 0.01 255);
+  --input: oklch(0.92 0.01 255);
+  --ring: oklch(0.55 0.18 260);
+
+  /* gradients & shadows */
+  --gradient-primary: linear-gradient(135deg, oklch(0.38 0.18 262) 0%, oklch(0.58 0.20 258) 100%);
+  --gradient-hero: radial-gradient(80% 60% at 70% 20%, oklch(0.62 0.20 258 / 0.35), transparent 60%),
+                   radial-gradient(60% 50% at 10% 80%, oklch(0.58 0.16 240 / 0.25), transparent 60%);
+  --gradient-aurora: conic-gradient(from 180deg at 50% 50%,
+                       oklch(0.55 0.20 260) 0deg,
+                       oklch(0.60 0.18 220) 90deg,
+                       oklch(0.50 0.22 280) 180deg,
+                       oklch(0.60 0.18 245) 270deg,
+                       oklch(0.55 0.20 260) 360deg);
+  --shadow-elegant: 0 24px 60px -20px oklch(0.42 0.18 262 / 0.35);
+  --shadow-soft: 0 8px 30px -12px oklch(0.18 0.03 260 / 0.18);
+  --shadow-glow: 0 0 60px oklch(0.62 0.20 258 / 0.45);
+
+  /* glass */
+  --glass-bg: oklch(1 0 0 / 0.55);
+  --glass-border: oklch(1 0 0 / 0.6);
+  --glass-blur: 18px;
+}
+
+.dark {
+  --background: oklch(0.14 0.02 260);
+  --foreground: oklch(0.97 0.005 250);
+
+  --card: oklch(0.18 0.025 260);
+  --card-foreground: oklch(0.97 0.005 250);
+
+  --popover: oklch(0.18 0.025 260);
+  --popover-foreground: oklch(0.97 0.005 250);
+
+  --primary: oklch(0.70 0.18 258);
+  --primary-foreground: oklch(0.14 0.02 260);
+  --primary-glow: oklch(0.78 0.16 248);
+
+  --secondary: oklch(0.24 0.03 260);
+  --secondary-foreground: oklch(0.97 0.005 250);
+
+  --muted: oklch(0.22 0.025 260);
+  --muted-foreground: oklch(0.70 0.02 258);
+
+  --accent: oklch(0.30 0.06 90);
+  --accent-foreground: oklch(0.97 0.005 250);
+
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.98 0.005 250);
+
+  --emergency: oklch(0.62 0.24 25);
+  --emergency-foreground: oklch(0.99 0.005 25);
+
+  --success: oklch(0.70 0.16 155);
+
+  --border: oklch(1 0 0 / 0.08);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.70 0.18 258);
+
+  --gradient-primary: linear-gradient(135deg, oklch(0.50 0.20 262) 0%, oklch(0.70 0.18 248) 100%);
+  --gradient-hero: radial-gradient(80% 60% at 70% 20%, oklch(0.50 0.22 260 / 0.45), transparent 60%),
+                   radial-gradient(60% 50% at 10% 80%, oklch(0.45 0.18 240 / 0.40), transparent 60%);
+  --shadow-elegant: 0 24px 80px -20px oklch(0 0 0 / 0.55);
+  --shadow-soft: 0 8px 30px -12px oklch(0 0 0 / 0.5);
+  --shadow-glow: 0 0 80px oklch(0.70 0.18 258 / 0.45);
+
+  --glass-bg: oklch(0.18 0.025 260 / 0.55);
+  --glass-border: oklch(1 0 0 / 0.08);
+}
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html { font-family: var(--font-sans); }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: oklch(0.62 0.20 258 / 0.25); }
+}
+
+/* ── Utilities ── */
+@utility glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  border: 1px solid var(--glass-border);
+}
+
+@utility text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Always-light text for blue gradient surfaces (works in both themes) */
+@utility text-on-primary { color: #ffffff; }
+@utility text-on-primary-soft { color: oklch(1 0 0 / 0.88); }
+
+/* Sharp gold accent for highlighting words on gradient surfaces */
+@utility text-gold { color: #FFD66B; }
+
+/* Apply blue gradient as a background-image utility (arbitrary
+   bg-[var(--gradient-primary)] doesn't always resolve as background-image). */
+@utility bg-gradient-primary {
+  background-image: var(--gradient-primary);
+  background-color: var(--color-primary);
+}
+
+/* Emergency / SOS gradient button */
+@utility bg-sos {
+  background-image: linear-gradient(135deg, oklch(0.58 0.25 25), oklch(0.50 0.24 18));
+  color: #ffffff;
+}
+
+/* Liquid-fill text — outline text that fills with a vertical gradient.
+   Fills from a DEEP navy at the bottom up to the brand light blue at the top. */
+@utility liquid-text {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--color-primary);
+  background-image: linear-gradient(0deg, oklch(0.22 0.14 262) 0%, oklch(0.42 0.18 262) 45%, oklch(0.70 0.18 248) 100%);
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% 0%;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+@utility bg-hero-radial {
+  background-image: var(--gradient-hero);
+}
+
+@utility shadow-elegant { box-shadow: var(--shadow-elegant); }
+@utility shadow-soft    { box-shadow: var(--shadow-soft); }
+@utility shadow-glow    { box-shadow: var(--shadow-glow); }
+
+/* ── Keyframes ── */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) }
+  50% { transform: translateY(-14px) }
+}
+@keyframes blob {
+  0%, 100% { border-radius: 42% 58% 60% 40% / 50% 45% 55% 50%; transform: translate(0,0) rotate(0) }
+  33% { border-radius: 60% 40% 35% 65% / 40% 55% 45% 60%; transform: translate(20px,-12px) rotate(8deg) }
+  66% { border-radius: 50% 50% 65% 35% / 60% 40% 55% 45%; transform: translate(-14px,18px) rotate(-6deg) }
+}
+@keyframes shimmer {
+  0% { transform: translateX(-100%) }
+  100% { transform: translateX(100%) }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(.8); opacity: .7 }
+  100% { transform: scale(2.4); opacity: 0 }
+}
+@keyframes liquid-in {
+  0% { transform: scale(.4); opacity: 0; filter: blur(30px) }
+  60% { transform: scale(1.05); opacity: 1; filter: blur(0) }
+  100% { transform: scale(1); opacity: 1; filter: blur(0) }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px) }
+  to { opacity: 1; transform: translateY(0) }
+}
+@keyframes marquee {
+  from { transform: translateX(0) }
+  to { transform: translateX(-50%) }
+}
+@keyframes liquid-fill {
+  0% { background-size: 100% 0% }
+  100% { background-size: 100% 110% }
+}
+
+@utility animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
+@utility animate-blob       { animation: blob 18s ease-in-out infinite; }
+@utility animate-shimmer    { animation: shimmer 2s linear infinite; }
+@utility animate-pulse-ring { animation: pulse-ring 2s cubic-bezier(.4,0,.6,1) infinite; }
+@utility animate-liquid-in  { animation: liquid-in 1.4s cubic-bezier(.22,1,.36,1) both; }
+@utility animate-fade-up    { animation: fade-up .8s cubic-bezier(.22,1,.36,1) both; }
+@utility animate-marquee    { animation: marquee 40s linear infinite; }
+@utility animate-liquid-fill { animation: liquid-fill 2.1s cubic-bezier(.6,.04,.3,1) forwards; }
