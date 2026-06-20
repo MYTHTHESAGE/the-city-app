@@ -94,7 +94,7 @@ export async function updateVendorProfile(vendorId: string, patch: any) {
 export async function fetchProductsByVendor(vendorId: string) {
   const { data, error } = await supabase
     .from("products")
-    .select("id, name, description, price, image_url, stock_status, is_available, sort_order")
+    .select("id, name, description, price, image_url, stock_status, is_available, sort_order, updated_at")
     .eq("vendor_id", vendorId)
     .eq("is_available", true)
     .order("sort_order", { ascending: true });
@@ -105,7 +105,7 @@ export async function fetchProductsByVendor(vendorId: string) {
 export async function fetchAllProductsByVendor(vendorId: string) {
   const { data, error } = await supabase
     .from("products")
-    .select("id, name, description, price, image_url, stock_status, is_available, sort_order")
+    .select("id, name, description, price, image_url, stock_status, is_available, sort_order, updated_at")
     .eq("vendor_id", vendorId)
     .order("sort_order", { ascending: true });
   if (error) throw error;

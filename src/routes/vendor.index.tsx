@@ -317,7 +317,7 @@ function VendorDashboard() {
             {(products ?? []).slice(0, 6).map((p) => (
               <article key={p.id} className="glass w-44 shrink-0 overflow-hidden rounded-2xl shadow-soft">
                 <img
-                  src={p.image_url ?? FALLBACK_PRODUCT}
+                  src={p.image_url ? `${p.image_url}?t=${new Date(p.updated_at).getTime()}` : FALLBACK_PRODUCT}
                   alt={p.name}
                   className="h-24 w-full object-cover"
                 />

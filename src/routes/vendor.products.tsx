@@ -179,7 +179,7 @@ function Products() {
         <div className="grid gap-3 sm:grid-cols-2">
           {(products ?? []).map((p) => (
             <article key={p.id} className="glass overflow-hidden rounded-3xl shadow-soft">
-              <img src={p.image_url ?? FALLBACK_IMG} alt={p.name} className="h-32 w-full object-cover" />
+              <img src={p.image_url ? `${p.image_url}?t=${new Date(p.updated_at).getTime()}` : FALLBACK_IMG} alt={p.name} className="h-32 w-full object-cover" />
               <div className="p-3">
                 <p className="text-sm font-bold text-foreground">{p.name}</p>
                 <p className="text-xs text-muted-foreground">

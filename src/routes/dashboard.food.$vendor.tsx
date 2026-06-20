@@ -102,7 +102,7 @@ function VendorStore() {
           const qty = getQty(it.id);
           return (
             <div key={it.id} className="glass flex gap-3 rounded-2xl p-3 shadow-soft">
-              <img src={it.image_url ?? FALLBACK_PRODUCT} alt={it.name} className="h-20 w-20 shrink-0 rounded-xl object-cover" />
+              <img src={it.image_url ? `${it.image_url}?t=${new Date(it.updated_at).getTime()}` : FALLBACK_PRODUCT} alt={it.name} className="h-20 w-20 shrink-0 rounded-xl object-cover" />
               <div className="flex flex-1 flex-col">
                 <p className="text-sm font-bold text-foreground">{it.name}</p>
                 {it.description && (
