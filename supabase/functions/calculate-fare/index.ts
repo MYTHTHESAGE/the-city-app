@@ -17,12 +17,12 @@ const FARE_CONFIG = {
   vehicles: {
     car:       { base: 500, per_km: 150 },
     motorbike: { base: 300, per_km:  80 },
-    tricycle:  { base: 350, per_km:  90 },
+    tricycle:  { base: 1200, per_km: 200 },
     bicycle:   { base: 200, per_km:  50 },
     van:       { base: 800, per_km: 200 },
     truck:     { base: 1200, per_km: 250 },
     // Default when vehicle_type is unknown / not provided
-    default:   { base: 400, per_km: 120 },
+    default:   { base: 1200, per_km: 200 },
   } as Record<string, { base: number; per_km: number }>,
 } as const;
 

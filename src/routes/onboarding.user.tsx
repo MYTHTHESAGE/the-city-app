@@ -36,6 +36,7 @@ const BLOOD_TYPES: { label: string; value: string }[] = [
 function UserOnboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+  const [isEmailVerificationSent, setIsEmailVerificationSent] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [data, setData] = useState({
     fullName: "",
@@ -88,6 +89,26 @@ function UserOnboarding() {
       return;
     }
 
+    if (!authData.session) {
+      // Save onboarding data in localStorage to sync after email validation
+      localStorage.setItem(
+        `pending_profile_user_${data.email.toLowerCase()}`,
+        JSON.stringify({
+          location_in_camp: data.locationInCamp || null,
+          residential_address: data.residentialAddress || null,
+          blood_type: data.bloodType || "unknown",
+          allergies: data.allergies || null,
+          health_info: data.healthInfo || null,
+          emergency_contact_name: data.emergencyName || null,
+          emergency_contact_phone: data.emergencyPhone || null,
+          emergency_contact_rel: data.emergencyRelation || null,
+        })
+      );
+      setSubmitting(false);
+      setIsEmailVerificationSent(data.email);
+      return;
+    }
+
     const { error: profileError } = await supabase.from("user_profiles").insert({
       id: userId,
       location_in_camp: data.locationInCamp || null,
@@ -127,6 +148,40 @@ function UserOnboarding() {
     (step === 1 && !!data.locationInCamp) ||
     step === 2 ||
     (step === 3 && !!data.emergencyName && !!data.emergencyPhone);
+
+  if (isEmailVerificationSent) {
+    return (
+      <OnboardingShell eyebrow="Verify Account" title="Check your email" subtitle="Confirm your registration to continue." hideHome>
+        <div className="glass flex flex-col items-center gap-5 rounded-3xl p-8 text-center shadow-elegant">
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-primary/10 text-primary animate-pulse">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0l-7.5-4.615a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+            </svg>
+          </span>
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold text-foreground">Verification email sent</h3>
+            <p className="max-w-xs text-xs text-muted-foreground leading-relaxed">
+              We've sent a verification link to <span className="font-semibold text-foreground">{isEmailVerificationSent}</span>. Please check your inbox and click the link in your email to confirm your account and log in.
+            </p>
+          </div>
+          <div className="mt-4 flex flex-col gap-2 w-full sm:flex-row justify-center">
+            <button
+              onClick={() => navigate({ to: "/signin" })}
+              className="bg-gradient-primary rounded-full px-6 py-2.5 text-xs font-bold text-on-primary shadow-elegant"
+            >
+              Go to Sign In
+            </button>
+            <button
+              onClick={() => navigate({ to: "/" })}
+              className="rounded-full border border-border bg-card px-6 py-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
+            >
+              Back to Home
+            </button>
+          </div>
+        </div>
+      </OnboardingShell>
+    );
+  }
 
   return (
     <OnboardingShell

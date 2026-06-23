@@ -41,7 +41,7 @@ type QuickAction = {
 };
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { to: "/dashboard/ride", label: "Keke / Okada", Icon: Bike, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-950" },
+  { to: "/dashboard/ride", label: "Keke", Icon: Bike, color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-950" },
   { to: "/dashboard/ride", label: "Car ride", Icon: Car, color: "text-sky-600 dark:text-sky-400", bg: "bg-sky-50 dark:bg-sky-950" },
   { to: "/dashboard/food", label: "Food order", Icon: UtensilsCrossed, color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-950" },
   { to: "/dashboard/food", label: "Market vendors", Icon: Store, color: "text-green-600 dark:text-green-400", bg: "bg-green-50 dark:bg-green-950" },

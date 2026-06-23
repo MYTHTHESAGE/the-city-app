@@ -91,6 +91,87 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) await loadProfile(user.id);
   }, [user, loadProfile]);
 
+  useEffect(() => {
+    if (!user) return;
+    const email = user.email?.toLowerCase();
+    if (!email) return;
+
+    // 1. Sync User profile
+    const userKey = `pending_profile_user_${email}`;
+    const pendingUser = localStorage.getItem(userKey);
+    if (pendingUser) {
+      try {
+        const payload = JSON.parse(pendingUser);
+        supabase.from("user_profiles")
+          .upsert({ id: user.id, ...payload })
+          .then(({ error }) => {
+            if (!error) {
+              localStorage.removeItem(userKey);
+              console.log("Auto-synced pending user profile");
+              refreshProfile();
+            } else {
+              console.error("Failed to sync user profile:", error);
+            }
+          });
+      } catch (e) {
+        console.error("Error parsing user profile:", e);
+      }
+    }
+
+    // 2. Sync Vendor profile & products
+    const vendorKey = `pending_profile_vendor_${email}`;
+    const pendingVendor = localStorage.getItem(vendorKey);
+    if (pendingVendor) {
+      try {
+        const { products: pendingProducts, ...payload } = JSON.parse(pendingVendor);
+        supabase.from("vendor_profiles")
+          .upsert({ id: user.id, ...payload })
+          .then(async ({ error }) => {
+            if (!error) {
+              localStorage.removeItem(vendorKey);
+              console.log("Auto-synced pending vendor profile");
+              refreshProfile();
+
+              if (pendingProducts && Array.isArray(pendingProducts)) {
+                for (const p of pendingProducts) {
+                  await supabase.from("products").insert({
+                    vendor_id: user.id,
+                    ...p
+                  });
+                }
+              }
+            } else {
+              console.error("Failed to sync vendor profile:", error);
+            }
+          });
+      } catch (e) {
+        console.error("Error parsing vendor profile:", e);
+      }
+    }
+
+    // 3. Sync Driver profile
+    const driverKey = `pending_profile_driver_${email}`;
+    const pendingDriver = localStorage.getItem(driverKey);
+    if (pendingDriver) {
+      try {
+        const payload = JSON.parse(pendingDriver);
+        supabase.from("driver_profiles")
+          .upsert({ id: user.id, ...payload })
+          .then(({ error }) => {
+            if (!error) {
+              localStorage.removeItem(driverKey);
+              console.log("Auto-synced pending driver profile");
+              refreshProfile();
+            } else {
+              console.error("Failed to sync driver profile:", error);
+            }
+          });
+      } catch (e) {
+        console.error("Error parsing driver profile:", e);
+      }
+    }
+  }, [user, refreshProfile]);
+
   return (
     <AuthContext.Provider
       value={{
