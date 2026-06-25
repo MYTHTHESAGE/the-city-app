@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, redirect } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,8 +7,16 @@ import { ArrowRight, Lock, Mail } from "lucide-react";
 import { CityLogo } from "@/components/city-logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleHomePath } from "@/lib/auth-guard";
+import { supabase } from "@/lib/supabase";
 
 export const Route = createFileRoute("/signin")({
+  beforeLoad: async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const { data } = await supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
+      throw redirect({ to: roleHomePath(data?.role as any) });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Sign in — The City App" },

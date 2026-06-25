@@ -4,8 +4,11 @@ import { ArrowRight, MapPin, Search, ShieldCheck, Sparkles, Loader2 } from "luci
 import heroCity from "@/assets/hero-city.jpg";
 import mapPreview from "@/assets/map-preview.jpg";
 import { calculateHaversineDistance } from "@/lib/directions";
+import { useAuth } from "@/contexts/AuthContext";
+import { roleHomePath } from "@/lib/auth-guard";
 
 export function Hero() {
+  const { user, role } = useAuth();
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -109,19 +112,31 @@ export function Hero() {
 
           {/* primary CTAs */}
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-              to="/signup"
-              className="bg-gradient-primary group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.03]"
-            >
-              Sign up — get started
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              to="/signin"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
-            >
-              Sign in
-            </Link>
+            {user ? (
+              <Link
+                to={roleHomePath(role)}
+                className="bg-gradient-primary group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.03]"
+              >
+                Go to Dashboard
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/signup"
+                  className="bg-gradient-primary group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 text-sm font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.03]"
+                >
+                  Sign up — get started
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+                <Link
+                  to="/signin"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
+                >
+                  Sign in
+                </Link>
+              </>
+            )}
             <a
               href="#how"
               className="inline-flex items-center justify-center gap-2 rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"

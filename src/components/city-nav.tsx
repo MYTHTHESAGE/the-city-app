@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { CityLogo } from "./city-logo";
 import { ThemeToggle } from "./theme-toggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { roleHomePath } from "@/lib/auth-guard";
 
 export function CityNav() {
+  const { user, role } = useAuth();
   return (
     <header className="fixed inset-x-0 top-3 z-50 mx-auto flex max-w-6xl items-center justify-between px-3 sm:top-4 sm:px-4">
       <div className="glass mx-auto flex w-full items-center justify-between gap-2 rounded-full px-3 py-2 shadow-soft">
@@ -17,18 +20,29 @@ export function CityNav() {
         </nav>
         <div className="flex items-center gap-1.5 sm:gap-2">
           <ThemeToggle />
-          <Link
-            to="/signin"
-            className="hidden rounded-full px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary sm:inline-flex"
-          >
-            Sign in
-          </Link>
-          <Link
-            to="/signup"
-            className="bg-gradient-primary inline-flex shrink-0 items-center rounded-full px-3.5 py-2 text-xs font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.03] sm:px-4"
-          >
-            Sign up
-          </Link>
+          {user ? (
+            <Link
+              to={roleHomePath(role)}
+              className="bg-gradient-primary inline-flex shrink-0 items-center rounded-full px-3.5 py-2 text-xs font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.03] sm:px-4"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/signin"
+                className="hidden rounded-full px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-secondary sm:inline-flex"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/signup"
+                className="bg-gradient-primary inline-flex shrink-0 items-center rounded-full px-3.5 py-2 text-xs font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.03] sm:px-4"
+              >
+                Sign up
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
