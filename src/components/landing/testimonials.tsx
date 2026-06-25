@@ -1,8 +1,8 @@
 const items = [
-  { name: "Amaka O.", role: "Lagos", quote: "I order lunch, book a ride home and check on my mum — all without leaving the app. It just works." },
+  { name: "Amaka O.", role: "Resident", quote: "I book a ride to the Arena and check on my friends — all without leaving the app. It just works." },
   { name: "Tunde A.", role: "Driver partner", quote: "Steady trips, fair fares, instant payouts. The City App changed how I work." },
   { name: "Mama Ngozi", role: "Vendor", quote: "My little kitchen now serves the whole neighbourhood. Orders never stop." },
-  { name: "Chiamaka I.", role: "Abuja", quote: "The SOS button gave my dad peace of mind. That alone made it worth it." },
+  { name: "Chiamaka I.", role: "Student", quote: "The SOS button gives me peace of mind when walking back to my hostel. That alone makes it worth it." },
 ];
 
 export function Testimonials() {

@@ -1,9 +1,55 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, MapPin, Search, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, MapPin, Search, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
 import heroCity from "@/assets/hero-city.jpg";
 import mapPreview from "@/assets/map-preview.jpg";
+import { calculateHaversineDistance } from "@/lib/directions";
 
 export function Hero() {
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+
+  const handleSearch = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!query.trim()) return;
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
+      });
+      const userLat = pos.coords.latitude;
+      const userLng = pos.coords.longitude;
+
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          query + ", Redemption Camp, Ogun State"
+        )}&key=${apiKey}`
+      );
+      const data = await res.json();
+
+      if (data.results && data.results.length > 0) {
+        const location = data.results[0].geometry.location;
+        const dist = calculateHaversineDistance(
+          { lat: userLat, lng: userLng },
+          { lat: location.lat, lng: location.lng }
+        );
+        const time = Math.max(1, Math.round((dist / 30) * 60)); // ~30km/h avg
+        setResult(`${dist.toFixed(1)} km away (~${time} min ride) from your location.`);
+      } else {
+        setResult("Could not find that location in Redemption City.");
+      }
+    } catch (err) {
+      console.error(err);
+      setResult("Please enable location services to calculate distance.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className="relative overflow-hidden pt-28 pb-16 sm:pt-32 sm:pb-20 md:pt-40 md:pb-28">
       {/* atmospheric backdrop */}
@@ -32,20 +78,33 @@ export function Hero() {
           </p>
 
           {/* search */}
-          <div className="glass mt-7 flex items-center gap-2 rounded-2xl p-2 shadow-soft">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary">
-              <MapPin className="h-4 w-4 text-primary" />
-            </div>
-            <div className="flex flex-1 items-center gap-2 pl-1">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <input
-                className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-                placeholder="Where in Redemption City? e.g. Auditorium 1"
-              />
-            </div>
-            <button className="bg-gradient-primary inline-flex items-center gap-1 rounded-xl px-4 py-2.5 text-sm font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.03]">
-              Go <ArrowRight className="h-4 w-4" />
-            </button>
+          <div className="mt-7 flex flex-col gap-2">
+            <form onSubmit={handleSearch} className="glass flex items-center gap-2 rounded-2xl p-2 shadow-soft">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-secondary">
+                <MapPin className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex flex-1 items-center gap-2 pl-1">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                  placeholder="Where in Redemption City? e.g. Auditorium 1"
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="bg-gradient-primary inline-flex items-center gap-1 rounded-xl px-4 py-2.5 text-sm font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.03] disabled:opacity-70 disabled:hover:scale-100"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Go <ArrowRight className="h-4 w-4" /></>}
+              </button>
+            </form>
+            {result && (
+              <p className="ml-2 text-sm font-medium text-primary animate-fade-up">
+                {result}
+              </p>
+            )}
           </div>
 
           {/* primary CTAs */}
