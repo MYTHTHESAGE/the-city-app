@@ -460,14 +460,20 @@ export async function updateDriverStatus(driverId: string, status: "online" | "o
   // First, check if the driver profile exists. If not, insert it; otherwise, update it.
   const { data, error } = await supabase
     .from("driver_profiles")
-    .update({ status })
+    .select("id, current_location")
     .eq("id", driverId)
-    .select("id")
     .maybeSingle();
 
   if (error) throw error;
 
-  if (!data) {
+  if (data) {
+    const patch: any = { status };
+    if (status === "online" && !data.current_location) {
+      patch.current_location = `POINT(${RCCG_CAMP.lng} ${RCCG_CAMP.lat})`;
+    }
+    const { error: updateError } = await supabase.from("driver_profiles").update(patch).eq("id", driverId);
+    if (updateError) throw updateError;
+  } else {
     const { error: upsertError } = await supabase
       .from("driver_profiles")
       .upsert({
@@ -475,6 +481,7 @@ export async function updateDriverStatus(driverId: string, status: "online" | "o
         status,
         vehicle_type: "tricycle", // default fallback vehicle type (Keke)
         license_plate: "PENDING", // default fallback license plate
+        current_location: `POINT(${RCCG_CAMP.lng} ${RCCG_CAMP.lat})`,
       });
     if (upsertError) throw upsertError;
   }

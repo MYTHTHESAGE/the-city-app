@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -16,6 +16,74 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { Download, X } from "lucide-react";
+
+function PwaInstallPrompt() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  useEffect(() => {
+    // Listen for the beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: any) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+      // Update UI notify the user they can install the PWA
+      setShowPrompt(true);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    // Show the install prompt
+    deferredPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === "accepted") {
+      setShowPrompt(false);
+      setDeferredPrompt(null);
+    }
+  };
+
+  if (!showPrompt) return null;
+
+  return (
+    <div className="fixed bottom-4 left-4 right-4 z-[100] animate-fade-up">
+      <div className="glass flex items-center justify-between rounded-2xl p-4 shadow-elegant border border-primary/20">
+        <div className="flex items-center gap-3">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary text-on-primary">
+            <Download className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-foreground">Install App</p>
+            <p className="text-xs text-muted-foreground">Add to home screen for quick access</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowPrompt(false)}
+            className="grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <button
+            onClick={handleInstallClick}
+            className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground transition-transform hover:scale-105"
+          >
+            Install
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function NotFoundComponent() {
   return (
@@ -151,6 +219,7 @@ function RootComponent() {
           <CartProvider>
             <Outlet />
             <Toaster richColors position="top-center" />
+            <PwaInstallPrompt />
           </CartProvider>
         </NotificationProvider>
       </AuthProvider>
