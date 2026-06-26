@@ -64,6 +64,7 @@ function UserOnboarding() {
       email: data.email,
       password: data.password,
       options: {
+        emailRedirectTo: window.location.origin + "/signin",
         data: {
           full_name: data.fullName,
           phone: data.phone,

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 
 /**
@@ -48,7 +49,21 @@ export function useDriverRequestsRealtime(
           table: "driver_requests",
           filter: `driver_id=eq.${driverId}`,
         },
-        invalidate,
+        (payload) => {
+          invalidate();
+          if (payload.new && payload.new.status === "pending") {
+            toast.info("🚨 New Ride Request!", {
+              description: "You have a new passenger waiting. Tap to view.",
+              duration: 10000,
+            });
+            if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+              new Notification("New Ride Request!", {
+                body: "You have a new passenger waiting in The City App.",
+                icon: "/icon-192.png"
+              });
+            }
+          }
+        },
       )
       .on(
         "postgres_changes",

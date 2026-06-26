@@ -145,6 +145,7 @@ function VendorOnboarding() {
       email: biz.email,
       password: biz.password,
       options: {
+        emailRedirectTo: window.location.origin + "/signin",
         data: {
           full_name: biz.vendorName,
           phone: biz.phone,

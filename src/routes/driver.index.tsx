@@ -189,6 +189,9 @@ function DriverDashboard() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["driver-profile", user?.id] });
       toast.success(online ? "You are now offline" : "You are now online");
+      if (!online && typeof Notification !== "undefined" && Notification.permission === "default") {
+        Notification.requestPermission();
+      }
     },
     onError: (err: Error) => toast.error(err.message),
   });
