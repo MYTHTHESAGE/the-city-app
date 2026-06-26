@@ -25,6 +25,39 @@ type ProductForm = {
   stock_status: string;
 };
 
+const FOOD_TEMPLATES = [
+  {
+    name: "Jollof Rice & Chicken",
+    description: "Classic party jollof rice served with fried chicken.",
+    price: 3000,
+    image_url: "https://images.unsplash.com/photo-1664992955581-229046c8230b?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Fried Rice & Beef",
+    description: "Delicious fried rice loaded with veggies and fried beef.",
+    price: 3000,
+    image_url: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Pounded Yam & Egusi",
+    description: "Smooth pounded yam with rich egusi soup and assorted meat.",
+    price: 4000,
+    image_url: "https://images.unsplash.com/photo-1662580796987-9bb82b13edef?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Meat Pie",
+    description: "Freshly baked meat pie with minced meat and potato filling.",
+    price: 1000,
+    image_url: "https://images.unsplash.com/photo-1610332822986-e8dff41fdf79?auto=format&fit=crop&w=600&q=80",
+  },
+  {
+    name: "Beef Suya",
+    description: "Spicy grilled beef skewers garnished with onions.",
+    price: 2500,
+    image_url: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+  }
+];
+
 const EMPTY_FORM: ProductForm = {
   name: "",
   description: "",
@@ -158,6 +191,28 @@ function Products() {
         >
           <Plus className="h-3.5 w-3.5" /> New product
         </button>
+      </div>
+
+      {/* Quick Add Templates */}
+      <div className="mt-2 mb-4">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+          Quick Add Templates
+        </h2>
+        <div className="flex gap-3 overflow-x-auto pb-2 snap-x scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+          {FOOD_TEMPLATES.map((t, idx) => (
+            <button
+              key={idx}
+              onClick={() => openEdit({ id: "", name: t.name, description: t.description, price: t.price, image_url: t.image_url, stock_status: "in_stock" })}
+              className="glass min-w-[140px] shrink-0 snap-start overflow-hidden rounded-2xl text-left shadow-soft transition-transform hover:scale-[1.02]"
+            >
+              <img src={t.image_url} alt={t.name} className="h-24 w-full object-cover" />
+              <div className="p-2.5">
+                <p className="text-[11px] font-bold text-foreground line-clamp-1">{t.name}</p>
+                <p className="text-[10px] text-primary mt-1 font-semibold">Add +</p>
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
 
       {isLoading && (
