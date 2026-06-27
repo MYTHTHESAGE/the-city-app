@@ -38,7 +38,8 @@ function FoodMarketplace() {
   const { data: vendors, isLoading, isError, refetch } = useQuery({
     queryKey: ["vendors"],
     queryFn: fetchVendors,
-    staleTime: 60_000,
+    staleTime: 0,
+    refetchInterval: 30_000,
   });
 
   const { data: orders, isLoading: ordersLoading } = useQuery({
@@ -47,11 +48,16 @@ function FoodMarketplace() {
     enabled: !!user && showHistory,
   });
 
-  const filtered = (vendors ?? []).filter((v) => {
-    const matchesCat = cat == null || v.category === cat;
-    const matchesQ = !q || v.business_name.toLowerCase().includes(q.toLowerCase());
-    return matchesCat && matchesQ;
-  });
+  const filtered = (vendors ?? [])
+    .filter((v) => {
+      const matchesCat = cat == null || v.category === cat;
+      const matchesQ = !q || v.business_name.toLowerCase().includes(q.toLowerCase());
+      return matchesCat && matchesQ;
+    })
+    .sort((a, b) => {
+      if (a.is_open === b.is_open) return 0;
+      return a.is_open ? -1 : 1;
+    });
 
   return (
     <div className="space-y-5">
@@ -128,10 +134,17 @@ function FoodMarketplace() {
                 <img
                   src={v.cover_url ?? FALLBACK_COVERS[idx % FALLBACK_COVERS.length]}
                   alt={v.business_name}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${!v.is_open ? 'grayscale opacity-60' : ''}`}
                   loading="lazy"
                 />
-                {v.rating != null && (
+                {!v.is_open && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/20 backdrop-blur-[1px]">
+                    <span className="rounded-full bg-background/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground shadow-sm">
+                      Closed
+                    </span>
+                  </div>
+                )}
+                {v.is_open && v.rating != null && (
                   <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/85 px-2 py-1 text-[10px] font-semibold text-foreground backdrop-blur-sm">
                     <Star className="h-3 w-3 fill-[#FFD66B] text-[#FFD66B]" />
                     {Number(v.rating).toFixed(1)}
