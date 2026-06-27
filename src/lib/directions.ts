@@ -21,18 +21,11 @@ export const REDEMPTION_CITY_POLYGON: LatLng[] = [
 /**
  * Checks if a coordinates point is inside the operational boundary polygon (even-odd ray casting).
  */
-export function isPointInPolygon(point: LatLng, polygon: LatLng[] = REDEMPTION_CITY_POLYGON): boolean {
-  const x = point.lng;
-  const y = point.lat;
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i].lng, yi = polygon[i].lat;
-    const xj = polygon[j].lng, yj = polygon[j].lat;
-    const intersect = ((yi > y) !== (yj > y))
-        && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  return inside;
+export function isPointInPolygon(point: LatLng, polygon?: any): boolean {
+  // Relaxed geofence: allow rides within a 10km radius of the Redemption City center
+  // to prevent GPS edge cases blocking users at the outskirts or with inaccurate GPS
+  const distance = calculateHaversineDistance(point, RCCG_CAMP);
+  return distance <= 10;
 }
 
 // ─── Distance & ETA Fallbacks ──────────────────────────────────────────────────
