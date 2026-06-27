@@ -125,18 +125,19 @@ export async function upsertProduct(
     sort_order?: number;
   },
 ) {
-  if (product.id) {
+  const { id, ...rest } = product;
+  if (id) {
     const { error } = await supabase
       .from("products")
-      .update(product)
-      .eq("id", product.id)
+      .update(rest)
+      .eq("id", id)
       .eq("vendor_id", vendorId);
     if (error) throw error;
-    return product.id;
+    return id;
   } else {
     const { data, error } = await supabase
       .from("products")
-      .insert({ ...product, vendor_id: vendorId })
+      .insert({ ...rest, vendor_id: vendorId })
       .select("id")
       .single();
     if (error) throw error;
