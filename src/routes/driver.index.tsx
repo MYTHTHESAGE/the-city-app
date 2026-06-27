@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { useUserLocation, resolveCoords } from "@/hooks/use-user-location";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { useUserLocation, resolveCoords, RCCG_CAMP } from "@/hooks/use-user-location";
 import {
   Bike,
   Camera,
@@ -18,9 +18,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CityMap, UserLocationMarker, VendorMarker } from "@/components/map/city-map";
+import { CityMap, UserLocationMarker, VendorMarker, DemandMarker } from "@/components/map/city-map";
 import { MapRoutePolyline, ServiceAreaPolygon } from "@/components/map/map-overlays";
-import { parsePostgisPoint, type LatLng } from "@/lib/directions";
+import { parsePostgisPoint, getDistanceMeters, type LatLng } from "@/lib/directions";
+import { sendLocalNotification, requestNotificationPermission } from "@/lib/notifications";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   fetchDriverProfile,
@@ -30,6 +31,7 @@ import {
   acceptDriverRequest,
   declineDriverRequest,
   updateDriverProfile,
+  fetchRecentRideRequests,
 } from "@/lib/queries";
 
 export const Route = createFileRoute("/driver/")({
@@ -49,6 +51,9 @@ type Req = {
   distanceKm: number;
   pickupCoords?: LatLng | null;
   dropoffCoords?: LatLng | null;
+  status?: string;
+  confirmedAt?: string | null;
+  prepTimeMinutes?: number | null;
 };
 
 function DriverDashboard() {
@@ -60,6 +65,8 @@ function DriverDashboard() {
   const [tab, setTab] = useState<"ride" | "delivery">("ride");
   const [active, setActive] = useState<Req | null>(null);
   const [phase, setPhase] = useState<"accepted" | "picked" | "dropped">("accepted");
+  const [destinationStr, setDestinationStr] = useState("");
+  const [destinationMode, setDestinationMode] = useState(false);
 
   const { data: driverProfile } = useQuery({
     queryKey: ["driver-profile", user?.id],
@@ -124,7 +131,14 @@ function DriverDashboard() {
     queryKey: ["driver-requests", user?.id],
     queryFn: () => fetchDriverRequests(user!.id),
     enabled: !!user && online,
-    refetchInterval: 60_000,
+    refetchInterval: 5_000,
+  });
+
+  const { data: recentRides } = useQuery({
+    queryKey: ["recent-rides-heatmap"],
+    queryFn: fetchRecentRideRequests,
+    enabled: online && !active,
+    refetchInterval: 120_000,
   });
 
   type RawReq = NonNullable<typeof rawRequests>[number];
@@ -158,6 +172,9 @@ function DriverDashboard() {
         delivery_address: string;
         delivery_location: any;
         total: number;
+        status?: string;
+        confirmed_at?: string | null;
+        prep_time_minutes?: number | null;
         profiles?: { full_name: string } | null;
         vendor_profiles?: {
           business_name: string;
@@ -177,24 +194,59 @@ function DriverDashboard() {
         distanceKm: Number(r.distance_m ?? 0) / 1000,
         pickupCoords: parsePostgisPoint(order?.vendor_profiles?.pickup_location),
         dropoffCoords: parsePostgisPoint(order?.delivery_location),
+        status: order?.status,
+        confirmedAt: order?.confirmed_at,
+        prepTimeMinutes: order?.prep_time_minutes,
       };
     }
+  }).filter((r: Req) => {
+    if (!destinationMode || !destinationStr.trim()) return true;
+    const q = destinationStr.toLowerCase();
+    return r.dropoff.toLowerCase().includes(q) || r.pickup.toLowerCase().includes(q);
   });
+
+  // Notify on new requests
+  const prevReqsRef = useRef(allRequests.length);
+  useEffect(() => {
+    if (allRequests.length > prevReqsRef.current) {
+      sendLocalNotification("New Request Available!", { body: "A new ride or delivery request is nearby." });
+    }
+    prevReqsRef.current = allRequests.length;
+  }, [allRequests.length]);
 
   const rideReqs = allRequests.filter((r) => r.kind === "ride");
   const deliveryReqs = allRequests.filter((r) => r.kind === "delivery");
 
-  const { mutate: toggleOnline } = useMutation({
-    mutationFn: () => updateDriverStatus(user!.id, online ? "offline" : "online"),
+  const toggleMutation = useMutation({
+    mutationFn: async () => {
+      await updateDriverStatus(user!.id, online ? "offline" : "online");
+      // When going ONLINE, seed location immediately so find_nearby_drivers can match us.
+      // GPS may not have fired yet, so we use the RCCG camp center as a fallback.
+      if (!online) {
+        const seedLat = userCoords?.lat ?? RCCG_CAMP.lat;
+        const seedLng = userCoords?.lng ?? RCCG_CAMP.lng;
+        try {
+          await updateDriverProfile(user!.id, {
+            current_location: `POINT(${seedLng} ${seedLat})`,
+          });
+        } catch {
+          // non-fatal
+        }
+      }
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["driver-profile", user?.id] });
       toast.success(online ? "You are now offline" : "You are now online");
-      if (!online && typeof Notification !== "undefined" && Notification.permission === "default") {
-        Notification.requestPermission();
-      }
     },
     onError: (err: Error) => toast.error(err.message),
   });
+
+  const toggleOnline = async () => {
+    if (!online) {
+      await requestNotificationPermission();
+    }
+    toggleMutation.mutate();
+  };
 
   const accept = (r: Req) => {
     setActive(r);
@@ -239,6 +291,11 @@ function DriverDashboard() {
         <CityMap center={userCoords} zoom={15}>
           <UserLocationMarker position={userCoords} label="You" />
           <ServiceAreaPolygon />
+          {online && !active && recentRides?.map((r, i) => {
+            const pt = parsePostgisPoint(r.pickup_location);
+            if (!pt) return null;
+            return <DemandMarker key={i} position={pt} weight={1} />;
+          })}
         </CityMap>
         <div className="glass absolute left-3 top-3 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-semibold text-foreground shadow-soft z-10">
           <span className={`h-2 w-2 rounded-full ${online ? "bg-success" : "bg-muted-foreground"}`} />
@@ -312,6 +369,34 @@ function DriverDashboard() {
           />
         </button>
       </section>
+
+      {online && (
+        <section className="glass rounded-3xl p-4 shadow-soft space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-foreground">Destination Filter</h3>
+            <button 
+              onClick={() => {
+                setDestinationMode(!destinationMode);
+                if (destinationMode) setDestinationStr("");
+              }}
+              className={`text-xs font-bold px-3 py-1 rounded-full ${destinationMode ? "bg-primary/20 text-primary" : "bg-secondary text-foreground"}`}
+            >
+              {destinationMode ? "Clear" : "Set"}
+            </button>
+          </div>
+          {destinationMode && (
+            <input 
+              value={destinationStr}
+              onChange={(e) => setDestinationStr(e.target.value)}
+              placeholder="e.g. Campus Gate"
+              className="w-full bg-secondary/40 border border-border rounded-xl px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+            />
+          )}
+          {destinationMode && destinationStr && (
+             <p className="text-[10px] text-muted-foreground">Only showing requests heading towards {destinationStr}.</p>
+          )}
+        </section>
+      )}
 
       {online && (
         <section className="space-y-3">
@@ -598,7 +683,26 @@ function ActiveDelivery({
         </div>
       </div>
 
-      <div className="glass grid grid-cols-2 gap-3 rounded-3xl p-4 shadow-elegant">
+      <div className="glass grid grid-cols-2 gap-3 rounded-3xl p-4 shadow-elegant relative">
+        {(() => {
+          let prepEtaStr = "";
+          if ((trip.status === "confirmed" || trip.status === "preparing") && trip.confirmedAt && trip.prepTimeMinutes) {
+            const confirmedAt = new Date(trip.confirmedAt);
+            const expectedReadyAt = new Date(confirmedAt.getTime() + trip.prepTimeMinutes * 60000);
+            const now = new Date();
+            if (expectedReadyAt > now) {
+              const diffMins = Math.ceil((expectedReadyAt.getTime() - now.getTime()) / 60000);
+              prepEtaStr = `Ready in ~${diffMins}m`;
+            } else {
+              prepEtaStr = "Ready now";
+            }
+          }
+          return prepEtaStr && phase === "accepted" ? (
+            <div className="absolute top-2 right-4 rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary">
+              {prepEtaStr}
+            </div>
+          ) : null;
+        })()}
         <div>
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Vendor</p>
           <p className="text-sm font-bold text-foreground">{trip.vendor ?? "Vendor"}</p>
