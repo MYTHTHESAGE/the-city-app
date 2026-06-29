@@ -128,15 +128,17 @@ export function DriverMarker({
   position,
   name,
   vehicleType,
+  onClick,
 }: {
   position: LatLng;
   name?: string;
   vehicleType?: string;
+  onClick?: () => void;
 }) {
   const emoji = vehicleEmoji(vehicleType);
   return (
-    <AdvancedMarker position={position} title={name ? `${name} · ${vehicleType ?? ""}` : vehicleType}>
-      <div className="bg-gradient-primary flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold text-on-primary shadow-elegant whitespace-nowrap">
+    <AdvancedMarker position={position} title={name ? `${name} · ${vehicleType ?? ""}` : vehicleType} onClick={onClick}>
+      <div className="bg-gradient-primary flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold text-on-primary shadow-elegant whitespace-nowrap cursor-pointer hover:scale-105 transition-transform">
         <span aria-hidden>{emoji}</span>
         {name && <span>{name.split(" ")[0]}</span>}
       </div>
@@ -155,11 +157,12 @@ export function EmergencyMarker({
   position: LatLng;
   label?: string;
   type?: "health" | "security";
+  onClick?: () => void;
 }) {
   const emoji = type === "health" ? "🏥" : type === "security" ? "🛡️" : "🆘";
   return (
-    <AdvancedMarker position={position} title={label}>
-      <div className="relative flex flex-col items-center">
+    <AdvancedMarker position={position} title={label} onClick={onClick}>
+      <div className="relative group flex flex-col items-center cursor-pointer transition-transform hover:scale-110">
         <div className="absolute inset-0 m-auto h-9 w-9 rounded-full bg-destructive/30 animate-pulse" />
         <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-destructive shadow-elegant ring-2 ring-background">
           <span className="text-sm" aria-hidden>{emoji}</span>

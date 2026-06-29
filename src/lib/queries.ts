@@ -294,6 +294,7 @@ export async function invokeMatchDriver(params: {
   pickup_lat: number;
   pickup_lng: number;
   radius_m?: number;
+  preferred_driver_id?: string;
 }): Promise<MatchDriverResult> {
   const { data, error } = await supabase.functions.invoke<MatchDriverResult>(
     "match-driver",

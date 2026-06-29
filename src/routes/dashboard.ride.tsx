@@ -21,7 +21,7 @@ import {
   rateRide,
 } from "@/lib/queries";
 import { formatDistanceToNow } from "date-fns";
-import { isPointInPolygon, parsePostgisPoint, getRoute, type LatLng } from "@/lib/directions";
+import { isPointInPolygon, parsePostgisPoint, getRoute, getDistanceMeters, type LatLng } from "@/lib/directions";
 import { MapRoutePolyline, ServiceAreaPolygon } from "@/components/map/map-overlays";
 import { supabase } from "@/lib/supabase";
 
@@ -78,6 +78,7 @@ function RideRequest() {
     polyline: string;
   } | null>(null);
   const [scheduledFor, setScheduledFor] = useState<string>("");
+  const [preferredDriverId, setPreferredDriverId] = useState<string | null>(null);
 
 
 
@@ -243,6 +244,7 @@ function RideRequest() {
           ride_id: rideId,
           pickup_lat: userCoords.lat,
           pickup_lng: userCoords.lng,
+          preferred_driver_id: preferredDriverId ?? undefined,
         });
         setMatchStatus(result.status);
         if (result.status === "no_drivers") {
@@ -255,6 +257,26 @@ function RideRequest() {
     },
     onError: (err: Error) => toast.error(err.message),
   });
+
+  const handleRequestSubmit = () => {
+    if (preferredDriverId && onlineDrivers) {
+      const d = onlineDrivers.find((x) => x.driver_id === preferredDriverId);
+      if (d) {
+        const dist = getDistanceMeters(userCoords, { lat: d.lat, lng: d.lng });
+        if (dist > 5000) {
+          const distKm = (dist / 1000).toFixed(1);
+          if (
+            !window.confirm(
+              `Driver ${d.full_name || "selected"} is ${distKm}km away and might take a while to arrive. Are you sure you want to request this driver?`
+            )
+          ) {
+            return;
+          }
+        }
+      }
+    }
+    submitRequest();
+  };
 
   const { mutate: doCancel, isPending: cancelling } = useMutation({
     mutationFn: () => {
@@ -397,14 +419,19 @@ function RideRequest() {
             ) : null;
           })()}
 
-          {/* Nearby online drivers when idle */}
-          {!isActive && (onlineDrivers ?? []).map((d) => (
-            <DriverMarker
-              key={d.driver_id}
-              position={{ lat: d.lat, lng: d.lng }}
-              vehicleType={d.vehicle_type ?? undefined}
-            />
-          ))}
+            {/* Nearby online drivers when idle */}
+            {!isActive && (onlineDrivers ?? []).map((d) => (
+              <DriverMarker
+                key={d.driver_id}
+                position={{ lat: d.lat, lng: d.lng }}
+                name={d.full_name}
+                vehicleType={d.vehicle_type ?? undefined}
+                onClick={() => {
+                  setPreferredDriverId(d.driver_id);
+                  toast.success(`Selected ${d.full_name ?? "driver"}`);
+                }}
+              />
+            ))}
         </CityMap>
         {status === "driver_arrived" && (
           <div className="glass absolute left-1/2 top-4 -translate-x-1/2 animate-fade-up rounded-full px-4 py-2 text-xs font-semibold text-foreground shadow-elegant">
@@ -501,8 +528,51 @@ function RideRequest() {
             {payment === "wallet" && wallet && fare != null && Number(wallet.balance) < fare && (
               <p className="text-xs text-destructive">Insufficient balance. Use cash.</p>
             )}
+
+            {/* Select specific driver */}
+            {(onlineDrivers ?? []).length > 0 && (
+              <div className="w-full">
+                <p className="text-xs font-semibold text-muted-foreground mb-2">Select a Driver (Optional)</p>
+                <div className="flex gap-2 overflow-x-auto pb-2 snap-x">
+                  <div
+                    onClick={() => setPreferredDriverId(null)}
+                    className={`flex min-w-[100px] snap-start cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 p-3 transition-all ${
+                      preferredDriverId === null
+                        ? "border-primary bg-primary/10 shadow-soft"
+                        : "border-border bg-card hover:bg-secondary/50"
+                    }`}
+                  >
+                    <RefreshCw className={`h-5 w-5 ${preferredDriverId === null ? "text-primary" : "text-muted-foreground"}`} />
+                    <span className="text-xs font-semibold">Any driver</span>
+                  </div>
+                  {onlineDrivers!.map((d) => (
+                    <div
+                      key={d.driver_id}
+                      onClick={() => setPreferredDriverId(d.driver_id)}
+                      className={`flex min-w-[120px] snap-start cursor-pointer flex-col items-center gap-1 rounded-2xl border-2 p-3 transition-all ${
+                        preferredDriverId === d.driver_id
+                          ? "border-primary bg-primary/10 shadow-soft"
+                          : "border-border bg-card hover:bg-secondary/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+                        <Star className="h-3 w-3 fill-current" />
+                        {d.rating != null ? Number(d.rating).toFixed(1) : "New"}
+                      </div>
+                      <span className="text-sm font-bold text-foreground truncate max-w-full">
+                        {d.full_name ? d.full_name.split(" ")[0] : "Driver"}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground capitalize">
+                        {d.vehicle_type ?? "Vehicle"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <button
-              onClick={() => submitRequest()}
+              onClick={handleRequestSubmit}
               disabled={requesting}
               className="bg-gradient-primary w-full rounded-full px-5 py-3 text-sm font-bold text-on-primary shadow-elegant transition-transform hover:scale-[1.02] disabled:opacity-60"
             >

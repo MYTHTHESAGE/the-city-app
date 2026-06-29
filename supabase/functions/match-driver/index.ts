@@ -15,6 +15,7 @@ interface MatchDriverRequest {
   pickup_lng: number;
   radius_m?: number;    // default 5000
   max_drivers?: number; // default 5
+  preferred_driver_id?: string;
 }
 
 interface DriverCandidate {
@@ -54,7 +55,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // Default radius is 25 km — Redemption City spans ~10 km; 25 km covers any GPS inaccuracy.
-  const { ride_id, pickup_lat, pickup_lng, radius_m = 25000, max_drivers = 5 } = body;
+  const { ride_id, pickup_lat, pickup_lng, radius_m = 25000, max_drivers = 5, preferred_driver_id } = body;
 
   if (!ride_id || pickup_lat == null || pickup_lng == null) {
     return json({ error: "ride_id, pickup_lat and pickup_lng are required" }, 400);
@@ -129,6 +130,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const candidates: DriverCandidate[] = (nearby ?? [])
+    .filter((row: Record<string, unknown>) => preferred_driver_id ? row.driver_id === preferred_driver_id : true)
     .slice(0, max_drivers)
     .map((row: Record<string, unknown>) => ({
       driver_id: row.driver_id as string,

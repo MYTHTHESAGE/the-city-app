@@ -9,6 +9,7 @@ export interface OnlineDriverMapEntry {
   lng: number;
   vehicle_type: string | null;
   rating: number | null;
+  full_name: string;
 }
 
 export function useOnlineDriversMap() {
