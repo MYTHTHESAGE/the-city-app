@@ -59,8 +59,8 @@ export function sendLocalNotification(title: string, options?: NotificationOptio
   if (!("Notification" in window)) return;
   if (Notification.permission === "granted") {
     new Notification(title, {
-      icon: "/pwa-192x192.png",
-      badge: "/pwa-192x192.png",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
       ...options,
     });
   }

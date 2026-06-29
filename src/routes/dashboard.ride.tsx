@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CircleCheck as CheckCircle2, ChevronDown, ChevronUp, CircleX, Clock, MapPin, MessageCircle, Navigation, Phone, RefreshCw, Star, X } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -290,7 +290,7 @@ function RideRequest() {
   });
 
   // Transition to rate modal when ride completes
-  const prevStatusRef = { current: activeRide?.status };
+  const prevStatusRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (
       activeRide?.status === "completed" &&

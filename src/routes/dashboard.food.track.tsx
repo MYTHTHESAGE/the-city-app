@@ -163,7 +163,7 @@ function Tracking() {
     );
   }
 
-  const isDelivered = order.status === "delivered" || order.status === "picked_up";
+  const isDelivered = order.status === "delivered";
   const isCancelled = order.status === "cancelled";
 
   let prepEtaStr = "";
