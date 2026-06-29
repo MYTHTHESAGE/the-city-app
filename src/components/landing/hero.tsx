@@ -3,9 +3,20 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, MapPin, Search, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
 import heroCity from "@/assets/hero-city.jpg";
 import mapPreview from "@/assets/map-preview.jpg";
+import arenaImg from "@/assets/landmarks/landmark_arena_1782733331118.png";
+import parkImg from "@/assets/landmarks/landmark_park_1782733377030.png";
+import fountainImg from "@/assets/landmarks/landmark_fountain_1782733431662.png";
+import galleryImg from "@/assets/landmarks/landmark_gallery_1782733811572.png";
 import { calculateHaversineDistance } from "@/lib/directions";
 import { useAuth } from "@/contexts/AuthContext";
 import { roleHomePath } from "@/lib/auth-guard";
+
+const TOURISM_LANDMARKS = [
+  { id: "arena", name: "The Arena", image: arenaImg },
+  { id: "park", name: "Emmanuel Park", image: parkImg },
+  { id: "fountain", name: "Dove Fountain", image: fountainImg },
+  { id: "gallery", name: "Open Heavens Gallery", image: galleryImg },
+];
 
 export function Hero() {
   const { user, role } = useAuth();
@@ -13,9 +24,13 @@ export function Hero() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
 
-  const handleSearch = async (e?: React.FormEvent) => {
+  const handleSearch = async (e?: React.FormEvent, directQuery?: string) => {
     e?.preventDefault();
-    if (!query.trim()) return;
+    const searchQuery = directQuery ?? query;
+    if (!searchQuery.trim()) return;
+    
+    if (directQuery) setQuery(directQuery);
+    
     setLoading(true);
     setResult(null);
 
@@ -27,11 +42,11 @@ export function Hero() {
       const userLng = pos.coords.longitude;
 
       const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      const res = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-          query + ", Redemption Camp, Ogun State"
-        )}&key=${apiKey}`
-      );
+        const res = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+            searchQuery + ", Redemption Camp, Ogun State"
+          )}&key=${apiKey}`
+        );
       const data = await res.json();
 
       if (data.results && data.results.length > 0) {
@@ -108,6 +123,33 @@ export function Hero() {
                 {result}
               </p>
             )}
+
+            {/* Tourism Carousel */}
+            <div className="mt-4 animate-fade-up" style={{ animationDelay: "100ms" }}>
+              <p className="text-xs font-semibold text-muted-foreground mb-3 pl-1">
+                Explore Popular Landmarks
+              </p>
+              <div className="flex gap-3 overflow-x-auto pb-3 snap-x">
+                {TOURISM_LANDMARKS.map((landmark) => (
+                  <button
+                    key={landmark.id}
+                    onClick={() => handleSearch(undefined, landmark.name)}
+                    className="group relative flex-shrink-0 w-36 h-24 sm:w-44 sm:h-28 rounded-2xl overflow-hidden snap-start focus:outline-none focus:ring-2 focus:ring-primary shadow-soft"
+                  >
+                    <img 
+                      src={landmark.image} 
+                      alt={landmark.name} 
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex items-end p-3">
+                      <span className="text-[11px] sm:text-xs font-bold text-white text-left leading-tight drop-shadow-md">
+                        {landmark.name}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* primary CTAs */}
