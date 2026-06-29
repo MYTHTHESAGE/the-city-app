@@ -92,6 +92,15 @@ function VendorStore() {
 
       <section className="space-y-3">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Menu</h2>
+        
+        {!vendor.is_open && (
+          <div className="mb-4 rounded-2xl border border-warning/40 bg-warning/10 p-4 text-center text-warning shadow-sm">
+            <AlertCircle className="mx-auto mb-2 h-6 w-6" />
+            <p className="text-sm font-bold">Store is Closed</p>
+            <p className="mt-1 text-[11px]">This vendor is not currently accepting new orders. Please check back later.</p>
+          </div>
+        )}
+
         {(products ?? []).length === 0 && (
           <div className="rounded-2xl border border-border bg-card p-6 text-center">
             <p className="text-sm font-semibold text-foreground">No items available</p>
@@ -129,7 +138,8 @@ function VendorStore() {
                   ) : (
                     <button
                       onClick={() => handleAdd({ id: it.id, name: it.name, price: Number(it.price) })}
-                      className="bg-gradient-primary rounded-full px-3 py-1.5 text-xs font-bold text-on-primary"
+                      disabled={!vendor.is_open}
+                      className={`rounded-full px-3 py-1.5 text-xs font-bold ${vendor.is_open ? 'bg-gradient-primary text-on-primary' : 'bg-secondary text-muted-foreground cursor-not-allowed'}`}
                     >
                       Add
                     </button>

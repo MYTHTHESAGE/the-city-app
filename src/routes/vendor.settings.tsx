@@ -41,6 +41,7 @@ function VendorSettings() {
     locationInCamp: "",
     category: "",
     description: "",
+    isOpen: true,
   });
 
   const [synced, setSynced] = useState(false);
@@ -52,11 +53,12 @@ function VendorSettings() {
       locationInCamp: vendorProfile?.location_in_camp ?? "",
       category: vendorProfile?.category ?? "",
       description: vendorProfile?.description ?? "",
+      isOpen: vendorProfile?.is_open ?? true,
     });
     setSynced(true);
   }
 
-  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const set = (k: keyof typeof form, v: any) => setForm((f) => ({ ...f, [k]: v }));
 
   const { mutate: save, isPending } = useMutation({
     mutationFn: async () => {
@@ -67,6 +69,7 @@ function VendorSettings() {
         location_in_camp: form.locationInCamp || null,
         category: form.category || null,
         description: form.description || null,
+        is_open: form.isOpen,
       });
       await refreshProfile();
     },
@@ -121,6 +124,29 @@ function VendorSettings() {
               value={form.description}
               onChange={(e) => set("description", e.target.value)}
             />
+          </Field>
+          
+          <Field label="Store Status">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className={`text-sm font-bold ${form.isOpen ? "text-success" : "text-muted-foreground"}`}>
+                  {form.isOpen ? "Store is Open" : "Store is Closed"}
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">Turn off when you are not accepting orders.</p>
+              </div>
+              <button
+                role="switch"
+                aria-checked={form.isOpen}
+                onClick={() => set("isOpen", !form.isOpen)}
+                className={`relative h-7 w-12 rounded-full transition-colors ${form.isOpen ? "bg-gradient-primary" : "bg-secondary"}`}
+              >
+                <span
+                  className={`absolute top-0.5 h-6 w-6 rounded-full bg-background shadow-elegant transition-transform ${
+                    form.isOpen ? "translate-x-[22px]" : "translate-x-0.5"
+                  }`}
+                />
+              </button>
+            </div>
           </Field>
         </div>
         <div className="mt-6 flex justify-end">

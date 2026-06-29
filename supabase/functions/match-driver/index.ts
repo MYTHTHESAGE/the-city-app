@@ -53,7 +53,8 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Invalid JSON body" }, 400);
   }
 
-  const { ride_id, pickup_lat, pickup_lng, radius_m = 5000, max_drivers = 5 } = body;
+  // Default radius is 25 km — Redemption City spans ~10 km; 25 km covers any GPS inaccuracy.
+  const { ride_id, pickup_lat, pickup_lng, radius_m = 25000, max_drivers = 5 } = body;
 
   if (!ride_id || pickup_lat == null || pickup_lng == null) {
     return json({ error: "ride_id, pickup_lat and pickup_lng are required" }, 400);
@@ -97,20 +98,30 @@ Deno.serve(async (req: Request) => {
 
   const attemptNumber = (prevAttempts?.attempt_number ?? 0) + 1;
 
-  // ── 3. Find nearby online drivers ───────────────────────────────────────────
-  const { data: nearby, error: nearbyErr } = await serviceClient.rpc(
-    "find_nearby_drivers",
-    {
+  // ── 3. Find nearby online drivers (with fallback widening) ──────────────────
+  // Try with the given radius first, then widen to 50 km if empty so that
+  // GPS inaccuracies never result in "no drivers" when drivers ARE online.
+  let nearby: Record<string, unknown>[] | null = null;
+  let nearbyErr: { message: string } | null = null;
+  let effectiveRadius = radius_m;
+
+  for (const searchRadius of [radius_m, 50000]) {
+    effectiveRadius = searchRadius;
+    const result = await serviceClient.rpc("find_nearby_drivers", {
       p_lat: pickup_lat,
       p_lng: pickup_lng,
-      p_radius_m: radius_m,
-    },
-  );
+      p_radius_m: searchRadius,
+    });
+    nearbyErr = result.error as typeof nearbyErr;
+    nearby = result.data as typeof nearby;
+    if (nearbyErr) break;          // real DB error — stop
+    if ((nearby ?? []).length > 0) break; // found someone — stop
+  }
 
   if (nearbyErr) {
     await logAttempt(serviceClient, {
       ride_id, attempt_number: attemptNumber,
-      pickup_lat, pickup_lng, radius_m,
+      pickup_lat, pickup_lng, radius_m: effectiveRadius,
       candidates: [], requests_sent: 0,
       status: "error", error_message: nearbyErr.message,
     });
@@ -131,7 +142,7 @@ Deno.serve(async (req: Request) => {
   if (candidates.length === 0) {
     await logAttempt(serviceClient, {
       ride_id, attempt_number: attemptNumber,
-      pickup_lat, pickup_lng, radius_m,
+      pickup_lat, pickup_lng, radius_m: effectiveRadius,
       candidates: [], requests_sent: 0, status: "no_drivers",
     });
 
@@ -196,7 +207,7 @@ Deno.serve(async (req: Request) => {
   // ── 6. Log the attempt ───────────────────────────────────────────────────────
   await logAttempt(serviceClient, {
     ride_id, attempt_number: attemptNumber,
-    pickup_lat, pickup_lng, radius_m,
+    pickup_lat, pickup_lng, radius_m: effectiveRadius,
     candidates, requests_sent: requestsSent, status: "dispatched",
   });
 

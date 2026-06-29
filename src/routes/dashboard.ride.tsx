@@ -15,6 +15,7 @@ import {
   fetchRideById,
   fetchUserRides,
   fetchWallet,
+  fetchSavedLocations,
   invokeCalculateFare,
   invokeMatchDriver,
   rateRide,
@@ -76,6 +77,7 @@ function RideRequest() {
     duration: number;
     polyline: string;
   } | null>(null);
+  const [scheduledFor, setScheduledFor] = useState<string>("");
 
 
 
@@ -204,6 +206,12 @@ function RideRequest() {
     enabled: !!user && showHistory,
   });
 
+  const { data: savedLocations } = useQuery({
+    queryKey: ["saved-locations", user?.id],
+    queryFn: () => fetchSavedLocations(user!.id),
+    enabled: !!user,
+  });
+
   const { mutate: submitRequest, isPending: requesting } = useMutation({
     mutationFn: () => {
       if (!user) throw new Error("Not authenticated.");
@@ -222,6 +230,7 @@ function RideRequest() {
         dropoff_address: dropoff,
         fare: effectiveFare,
         payment_method: payment,
+        scheduled_for: scheduledFor ? new Date(scheduledFor).toISOString() : null,
       });
     },
     onSuccess: async (rideId) => {
@@ -437,8 +446,33 @@ function RideRequest() {
             />
           </div>
 
+          {savedLocations && savedLocations.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+              {savedLocations.map((loc) => (
+                <button
+                  key={loc.id}
+                  onClick={() => setDropoff(loc.address)}
+                  className="shrink-0 flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary/50 transition-colors"
+                >
+                  <MapPin className="h-3 w-3 text-primary" />
+                  {loc.label}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div className="glass space-y-3 rounded-2xl p-4 shadow-soft">
-            <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Schedule for later (optional)</p>
+              <input
+                type="datetime-local"
+                value={scheduledFor}
+                onChange={(e) => setScheduledFor(e.target.value)}
+                className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-primary"
+              />
+            </div>
+
+            <div className="flex items-center justify-between mt-3">
               <div>
                 <p className="text-xs text-muted-foreground">Estimated fare</p>
                 {fare != null ? (
@@ -565,7 +599,21 @@ function RideRequest() {
                 Call
               </a>
               <ActionBtn Icon={MessageCircle} label="Chat" />
-              <ActionBtn Icon={MapPin} label="Share" />
+              <button 
+                onClick={() => {
+                  const url = `${window.location.origin}/track/${activeRideId}`;
+                  if (navigator.share) {
+                    navigator.share({ title: "Track my ride", url }).catch(() => {});
+                  } else {
+                    navigator.clipboard.writeText(url);
+                    toast.success("Tracking link copied to clipboard");
+                  }
+                }}
+                className="flex flex-col items-center gap-1 rounded-2xl bg-secondary px-3 py-2.5 text-xs font-semibold text-foreground hover:bg-secondary/70"
+              >
+                <MapPin className="h-4 w-4" />
+                Share
+              </button>
             </div>
           )}
 

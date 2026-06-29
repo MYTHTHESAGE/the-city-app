@@ -16,35 +16,53 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
-import { Download, X } from "lucide-react";
+import { Download, X, Share } from "lucide-react";
 
 function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showPrompt, setShowPrompt] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Listen for the beforeinstallprompt event
+    setIsIOS(/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream);
+
+    const checkPrompt = () => {
+      const dismissed = localStorage.getItem("pwa_prompt_dismissed");
+      if (dismissed) return;
+
+      // Handle iOS
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream) {
+        const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+        if (!isStandalone) setShowPrompt(true);
+      }
+    };
+
+    // Delay showing to not interrupt initial page load
+    const timer = setTimeout(checkPrompt, 3000);
+
     const handleBeforeInstallPrompt = (e: any) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e);
-      // Update UI notify the user they can install the PWA
-      setShowPrompt(true);
+      if (!localStorage.getItem("pwa_prompt_dismissed")) {
+        setShowPrompt(true);
+      }
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      clearTimeout(timer);
     };
   }, []);
 
+  const handleDismiss = () => {
+    localStorage.setItem("pwa_prompt_dismissed", "true");
+    setShowPrompt(false);
+  };
+
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
-    // Show the install prompt
     deferredPrompt.prompt();
-    // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === "accepted") {
       setShowPrompt(false);
@@ -59,26 +77,34 @@ function PwaInstallPrompt() {
       <div className="glass flex items-center justify-between rounded-2xl p-4 shadow-elegant border border-primary/20">
         <div className="flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary text-on-primary">
-            <Download className="h-5 w-5" />
+            {isIOS ? <Share className="h-5 w-5" /> : <Download className="h-5 w-5" />}
           </div>
           <div>
-            <p className="text-sm font-bold text-foreground">Install App</p>
-            <p className="text-xs text-muted-foreground">Add to home screen for quick access</p>
+            <p className="text-sm font-bold text-foreground">
+              {isIOS ? "Install App" : "Install App"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {isIOS 
+                ? "Tap Share then 'Add to Home Screen'" 
+                : "Add to home screen for quick access"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowPrompt(false)}
+            onClick={handleDismiss}
             className="grid h-8 w-8 place-items-center rounded-full bg-secondary text-muted-foreground"
           >
             <X className="h-4 w-4" />
           </button>
-          <button
-            onClick={handleInstallClick}
-            className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground transition-transform hover:scale-105"
-          >
-            Install
-          </button>
+          {!isIOS && (
+            <button
+              onClick={handleInstallClick}
+              className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground transition-transform hover:scale-105"
+            >
+              Install
+            </button>
+          )}
         </div>
       </div>
     </div>

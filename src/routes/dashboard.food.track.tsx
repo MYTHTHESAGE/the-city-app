@@ -166,6 +166,19 @@ function Tracking() {
   const isDelivered = order.status === "delivered" || order.status === "picked_up";
   const isCancelled = order.status === "cancelled";
 
+  let prepEtaStr = "";
+  if ((order.status === "confirmed" || order.status === "preparing") && order.confirmed_at && order.prep_time_minutes) {
+    const confirmedAt = new Date(order.confirmed_at);
+    const expectedReadyAt = new Date(confirmedAt.getTime() + order.prep_time_minutes * 60000);
+    const now = new Date();
+    if (expectedReadyAt > now) {
+      const diffMins = Math.ceil((expectedReadyAt.getTime() - now.getTime()) / 60000);
+      prepEtaStr = `Ready in ~${diffMins} min`;
+    } else {
+      prepEtaStr = "Should be ready soon";
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -184,8 +197,7 @@ function Tracking() {
         </button>
       </div>
 
-      {/* Status banner */}
-      <div className={`overflow-hidden rounded-3xl p-5 shadow-elegant ${isCancelled ? "bg-emergency/10 border border-emergency/30" : "bg-gradient-primary text-on-primary"}`}>
+      <div className={`overflow-hidden rounded-3xl p-5 shadow-elegant relative ${isCancelled ? "bg-emergency/10 border border-emergency/30" : "bg-gradient-primary text-on-primary"}`}>
         <p className={`text-xs uppercase tracking-wider ${isCancelled ? "text-emergency" : "text-on-primary-soft"}`}>
           Current status
         </p>
@@ -197,6 +209,11 @@ function Tracking() {
             ? "Your order was cancelled."
             : STATUS_STEPS.find((s) => s.id === order.status)?.sub ?? ""}
         </p>
+        {prepEtaStr && (
+          <div className="absolute top-5 right-5 rounded-full bg-background/20 px-3 py-1 text-xs font-semibold backdrop-blur-md">
+            {prepEtaStr}
+          </div>
+        )}
       </div>
 
       {/* Map Tracking */}

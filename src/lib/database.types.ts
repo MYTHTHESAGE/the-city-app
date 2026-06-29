@@ -388,6 +388,7 @@ type GeneratedDatabase = {
           picked_up_at: string | null;
           delivered_at: string | null;
           cancelled_at: string | null;
+          prep_time_minutes: number | null;
           created_at: string;
         };
         Insert: {
@@ -410,6 +411,7 @@ type GeneratedDatabase = {
           picked_up_at?: string | null;
           delivered_at?: string | null;
           cancelled_at?: string | null;
+          prep_time_minutes?: number | null;
           created_at?: string;
         };
         Update: {
@@ -432,6 +434,7 @@ type GeneratedDatabase = {
           picked_up_at?: string | null;
           delivered_at?: string | null;
           cancelled_at?: string | null;
+          prep_time_minutes?: number | null;
           created_at?: string;
         };
       };
@@ -487,6 +490,7 @@ type GeneratedDatabase = {
           driver_arrived_at: string | null;
           started_at: string | null;
           completed_at: string | null;
+          scheduled_for: string | null;
           created_at: string;
         };
         Insert: {
@@ -499,7 +503,7 @@ type GeneratedDatabase = {
           dropoff_location: any;
           status?: RideStatus;
           fare?: number | null;
-          payment_method?: PaymentMethod;
+          payment_method: PaymentMethod;
           rating?: number | null;
           rating_comment?: string | null;
           cancelled_by?: "user" | "driver" | "system" | null;
@@ -508,6 +512,7 @@ type GeneratedDatabase = {
           driver_arrived_at?: string | null;
           started_at?: string | null;
           completed_at?: string | null;
+          scheduled_for?: string | null;
           created_at?: string;
         };
         Update: {
@@ -529,6 +534,7 @@ type GeneratedDatabase = {
           driver_arrived_at?: string | null;
           started_at?: string | null;
           completed_at?: string | null;
+          scheduled_for?: string | null;
           created_at?: string;
         };
       };
@@ -795,6 +801,32 @@ type GeneratedDatabase = {
           created_at?: string;
         };
       };
+      saved_locations: {
+        Row: {
+          id: string;
+          user_id: string;
+          label: string;
+          address: string;
+          location_coords: any;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          label: string;
+          address: string;
+          location_coords: any;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          label?: string;
+          address?: string;
+          location_coords?: any;
+          created_at?: string;
+        };
+      };
     };
     Functions: {
       get_my_role: {
@@ -866,6 +898,15 @@ type GeneratedDatabase = {
 };
 
 type TableRelationships = {
+  saved_locations: [
+    {
+      foreignKeyName: "saved_locations_user_id_fkey";
+      columns: ["user_id"];
+      isOneToOne: false;
+      referencedRelation: "profiles";
+      referencedColumns: ["id"];
+    }
+  ];
   profiles: [];
   user_profiles: [
     {

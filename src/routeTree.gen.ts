@@ -26,6 +26,7 @@ import { Route as VendorSettingsRouteImport } from './routes/vendor.settings'
 import { Route as VendorSalesRouteImport } from './routes/vendor.sales'
 import { Route as VendorRatingsRouteImport } from './routes/vendor.ratings'
 import { Route as VendorProductsRouteImport } from './routes/vendor.products'
+import { Route as TrackRideIdRouteImport } from './routes/track.$rideId'
 import { Route as ResponderDirectoryRouteImport } from './routes/responder.directory'
 import { Route as ResponderBroadcastRouteImport } from './routes/responder.broadcast'
 import { Route as ResponderAlertsRouteImport } from './routes/responder.alerts'
@@ -133,6 +134,11 @@ const VendorProductsRoute = VendorProductsRouteImport.update({
   id: '/products',
   path: '/products',
   getParentRoute: () => VendorRoute,
+} as any)
+const TrackRideIdRoute = TrackRideIdRouteImport.update({
+  id: '/track/$rideId',
+  path: '/track/$rideId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ResponderDirectoryRoute = ResponderDirectoryRouteImport.update({
   id: '/directory',
@@ -272,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/responder/alerts': typeof ResponderAlertsRoute
   '/responder/broadcast': typeof ResponderBroadcastRoute
   '/responder/directory': typeof ResponderDirectoryRoute
+  '/track/$rideId': typeof TrackRideIdRoute
   '/vendor/products': typeof VendorProductsRoute
   '/vendor/ratings': typeof VendorRatingsRoute
   '/vendor/sales': typeof VendorSalesRoute
@@ -308,6 +315,7 @@ export interface FileRoutesByTo {
   '/responder/alerts': typeof ResponderAlertsRoute
   '/responder/broadcast': typeof ResponderBroadcastRoute
   '/responder/directory': typeof ResponderDirectoryRoute
+  '/track/$rideId': typeof TrackRideIdRoute
   '/vendor/products': typeof VendorProductsRoute
   '/vendor/ratings': typeof VendorRatingsRoute
   '/vendor/sales': typeof VendorSalesRoute
@@ -350,6 +358,7 @@ export interface FileRoutesById {
   '/responder/alerts': typeof ResponderAlertsRoute
   '/responder/broadcast': typeof ResponderBroadcastRoute
   '/responder/directory': typeof ResponderDirectoryRoute
+  '/track/$rideId': typeof TrackRideIdRoute
   '/vendor/products': typeof VendorProductsRoute
   '/vendor/ratings': typeof VendorRatingsRoute
   '/vendor/sales': typeof VendorSalesRoute
@@ -393,6 +402,7 @@ export interface FileRouteTypes {
     | '/responder/alerts'
     | '/responder/broadcast'
     | '/responder/directory'
+    | '/track/$rideId'
     | '/vendor/products'
     | '/vendor/ratings'
     | '/vendor/sales'
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/responder/alerts'
     | '/responder/broadcast'
     | '/responder/directory'
+    | '/track/$rideId'
     | '/vendor/products'
     | '/vendor/ratings'
     | '/vendor/sales'
@@ -470,6 +481,7 @@ export interface FileRouteTypes {
     | '/responder/alerts'
     | '/responder/broadcast'
     | '/responder/directory'
+    | '/track/$rideId'
     | '/vendor/products'
     | '/vendor/ratings'
     | '/vendor/sales'
@@ -494,6 +506,7 @@ export interface RootRouteChildren {
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
   VendorRoute: typeof VendorRouteWithChildren
+  TrackRideIdRoute: typeof TrackRideIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -616,6 +629,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vendor/products'
       preLoaderRoute: typeof VendorProductsRouteImport
       parentRoute: typeof VendorRoute
+    }
+    '/track/$rideId': {
+      id: '/track/$rideId'
+      path: '/track/$rideId'
+      fullPath: '/track/$rideId'
+      preLoaderRoute: typeof TrackRideIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/responder/directory': {
       id: '/responder/directory'
@@ -903,6 +923,7 @@ const rootRouteChildren: RootRouteChildren = {
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
   VendorRoute: VendorRouteWithChildren,
+  TrackRideIdRoute: TrackRideIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

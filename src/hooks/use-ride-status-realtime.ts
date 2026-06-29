@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
+import { sendLocalNotification } from "@/lib/notifications";
 
 const TERMINAL_STATUSES = new Set(["completed", "cancelled"]);
 
@@ -47,6 +48,13 @@ export function useRideStatusRealtime(
           qc.invalidateQueries({ queryKey: ["ride", rideId] });
 
           const newStatus = (payload.new as { status?: string }).status;
+          
+          if (newStatus === "driver_arrived") {
+            sendLocalNotification("Your driver has arrived!", { body: "Please meet your driver at the pickup location." });
+          } else if (newStatus === "driver_assigned") {
+            sendLocalNotification("Driver assigned", { body: "A driver is on their way." });
+          }
+
           if (newStatus && TERMINAL_STATUSES.has(newStatus)) {
             if (userId) {
               qc.invalidateQueries({ queryKey: ["user-rides", userId] });

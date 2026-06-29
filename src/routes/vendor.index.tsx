@@ -75,8 +75,8 @@ function VendorDashboard() {
   }, [qc, user?.id]);
 
   const { mutate: advanceStatus, isPending: advancing } = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      updateOrderStatus(id, status),
+    mutationFn: ({ id, status, prepTime }: { id: string; status: string; prepTime?: number }) =>
+      updateOrderStatus(id, status, prepTime),
     onSuccess: () => {
       invalidateOrders();
       toast.success("Order updated.");
@@ -253,8 +253,32 @@ function VendorDashboard() {
                 <span className="font-bold text-foreground">₦{Number(order.total).toLocaleString()}</span>
               </div>
 
-              <div className="mt-4 flex gap-2">
-                {actionLabel && nextStatus && (
+              <div className="mt-4 flex gap-2 flex-col sm:flex-row">
+                {actionLabel && nextStatus && status === "pending" ? (
+                  <div className="flex flex-1 gap-2">
+                    <button
+                      disabled={advancing}
+                      onClick={() => advanceStatus({ id: order.id, status: nextStatus, prepTime: 10 })}
+                      className="bg-gradient-primary flex-1 rounded-full py-2.5 text-xs font-bold text-on-primary shadow-soft disabled:opacity-60"
+                    >
+                      10 min
+                    </button>
+                    <button
+                      disabled={advancing}
+                      onClick={() => advanceStatus({ id: order.id, status: nextStatus, prepTime: 20 })}
+                      className="bg-gradient-primary flex-1 rounded-full py-2.5 text-xs font-bold text-on-primary shadow-soft disabled:opacity-60"
+                    >
+                      20 min
+                    </button>
+                    <button
+                      disabled={advancing}
+                      onClick={() => advanceStatus({ id: order.id, status: nextStatus, prepTime: 30 })}
+                      className="bg-gradient-primary flex-1 rounded-full py-2.5 text-xs font-bold text-on-primary shadow-soft disabled:opacity-60"
+                    >
+                      30 min
+                    </button>
+                  </div>
+                ) : actionLabel && nextStatus ? (
                   <button
                     disabled={advancing}
                     onClick={() => advanceStatus({ id: order.id, status: nextStatus })}
@@ -262,11 +286,11 @@ function VendorDashboard() {
                   >
                     {advancing ? "Updating…" : actionLabel}
                   </button>
-                )}
+                ) : null}
                 <button
                   disabled={advancing}
                   onClick={() => advanceStatus({ id: order.id, status: "cancelled" })}
-                  className="rounded-full border border-border bg-card px-4 py-2.5 text-xs font-semibold text-muted-foreground disabled:opacity-50"
+                  className="rounded-full border border-border bg-card px-6 py-2.5 text-xs font-semibold text-muted-foreground disabled:opacity-50"
                 >
                   Cancel
                 </button>

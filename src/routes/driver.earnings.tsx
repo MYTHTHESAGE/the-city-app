@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Wallet, Landmark, ChevronRight, TrendingUp } from "lucide-react";
 import { requireAuth } from "@/lib/auth-guard";
-import { fetchDriverStats } from "@/lib/queries";
+import { fetchDriverStats, fetchWallet, fetchWalletTransactions, requestPayout } from "@/lib/queries";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/driver/earnings")({
   beforeLoad: () => requireAuth({ allowedRoles: ["driver", "super_admin"] }),
@@ -31,7 +33,7 @@ const WEEKLY_EARNINGS: DayEarning[] = [
 function DriverEarnings() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [requesting, setRequesting] = useState(false);
+  const qc = useQueryClient();
 
   const { data: stats } = useQuery({
     queryKey: ["driver-stats", user?.id],
@@ -39,21 +41,33 @@ function DriverEarnings() {
     enabled: !!user,
   });
 
-  const todayEarnings = stats?.earnings ?? 0;
-  const weeklyTotal = WEEKLY_EARNINGS.reduce((s, d) => s + d.amount, 0) + todayEarnings;
-  const maxAmount = Math.max(...WEEKLY_EARNINGS.map((d) => d.amount), todayEarnings);
+  const { data: wallet } = useQuery({
+    queryKey: ["wallet", user?.id],
+    queryFn: () => fetchWallet(user!.id),
+    enabled: !!user,
+  });
 
-  const handleRequestPayout = () => {
-    if (weeklyTotal === 0) {
-      toast.error("No earnings available for payout.");
-      return;
-    }
-    setRequesting(true);
-    setTimeout(() => {
-      setRequesting(false);
-      toast.success(`Payout of ₦${weeklyTotal.toLocaleString()} requested! Funds will arrive in your bank account shortly.`);
-    }, 1500);
-  };
+  const { data: transactions } = useQuery({
+    queryKey: ["wallet-transactions", user?.id],
+    queryFn: () => fetchWalletTransactions(user!.id, 20),
+    enabled: !!user,
+  });
+
+  const balance = Number(wallet?.balance ?? 0);
+  const todayEarnings = stats?.earnings ?? 0;
+
+  const { mutate: doPayout, isPending: requesting } = useMutation({
+    mutationFn: async () => {
+      if (balance <= 0) throw new Error("No earnings available for payout.");
+      return requestPayout(user!.id, balance);
+    },
+    onSuccess: () => {
+      toast.success(`Payout of ₦${balance.toLocaleString()} requested!`);
+      qc.invalidateQueries({ queryKey: ["wallet", user?.id] });
+      qc.invalidateQueries({ queryKey: ["wallet-transactions", user?.id] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
 
   return (
     <div className="space-y-5">
@@ -86,36 +100,41 @@ function DriverEarnings() {
           </p>
         </div>
         <div className="glass rounded-3xl p-5 shadow-soft">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">This Week</p>
-          <p className="text-2xl font-bold text-foreground mt-1">₦{weeklyTotal.toLocaleString()}</p>
-          <p className="text-[10px] text-muted-foreground mt-1">Mon – Sun breakdown</p>
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Available Balance</p>
+          <p className="text-2xl font-bold text-foreground mt-1">₦{balance.toLocaleString()}</p>
+          <p className="text-[10px] text-muted-foreground mt-1">Ready for payout</p>
         </div>
       </section>
 
-      {/* Weekly Chart */}
+      {/* Recent Transactions */}
       <section className="glass rounded-3xl p-5 shadow-elegant space-y-4">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Weekly Performance
+          Recent Transactions
         </h3>
-        <div className="flex h-40 items-end justify-between gap-1 pt-4 px-2">
-          {WEEKLY_EARNINGS.map((d, i) => {
-            const pct = maxAmount > 0 ? (d.amount / maxAmount) * 100 : 0;
-            return (
-              <div key={i} className="flex flex-col items-center flex-1 group">
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-foreground text-background text-[9px] font-bold rounded px-1 py-0.5 -mt-6 absolute">
-                  ₦{d.amount}
-                </span>
-                <div className="h-28 w-full flex items-end justify-center">
-                  <div
-                    className="w-4/5 bg-gradient-primary rounded-t-lg transition-all duration-500 hover:opacity-85"
-                    style={{ height: `${pct}%` }}
-                  />
+        {!transactions && (
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => <div key={i} className="h-10 animate-pulse bg-secondary rounded-xl" />)}
+          </div>
+        )}
+        {transactions?.length === 0 && (
+          <p className="text-xs text-muted-foreground text-center py-4">No transactions yet.</p>
+        )}
+        {transactions && transactions.length > 0 && (
+          <div className="divide-y divide-border/60">
+            {transactions.map((tx) => (
+              <div key={tx.id} className="flex items-center justify-between py-3">
+                <div>
+                  <p className="text-sm font-semibold text-foreground capitalize">{tx.type} <span className="text-[10px] text-muted-foreground lowercase">({tx.status})</span></p>
+                  <p className="text-xs text-muted-foreground">{tx.description || "Wallet transaction"}</p>
+                  <p className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(tx.created_at), { addSuffix: true })}</p>
                 </div>
-                <span className="text-[10px] text-muted-foreground mt-2 font-medium">{d.day}</span>
+                <div className={`text-sm font-bold ${tx.type === "deposit" || tx.type === "credit" ? "text-success" : "text-foreground"}`}>
+                  {tx.type === "deposit" || tx.type === "credit" ? "+" : "-"}₦{Number(tx.amount).toLocaleString()}
+                </div>
               </div>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Payout Actions */}
@@ -131,11 +150,11 @@ function DriverEarnings() {
         </div>
 
         <button
-          onClick={handleRequestPayout}
-          disabled={requesting}
+          onClick={() => doPayout()}
+          disabled={requesting || balance <= 0}
           className="bg-gradient-primary w-full rounded-full py-3 text-sm font-bold text-on-primary shadow-elegant disabled:opacity-60"
         >
-          {requesting ? "Processing Payout..." : `Request Payout (₦${weeklyTotal.toLocaleString()})`}
+          {requesting ? "Processing Payout..." : `Request Payout (₦${balance.toLocaleString()})`}
         </button>
       </section>
     </div>

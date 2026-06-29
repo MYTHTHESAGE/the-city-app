@@ -100,6 +100,28 @@ export function UserLocationMarker({ position, label = "You" }: { position: LatL
 }
 
 /**
+ * Blurred red circle for heatmaps.
+ */
+export function DemandMarker({ position, weight = 1 }: { position: LatLng; weight?: number }) {
+  const size = 30 + weight * 10;
+  const opacity = Math.min(0.8, 0.3 + weight * 0.1);
+  return (
+    <AdvancedMarker position={position}>
+      <div 
+        style={{ 
+          width: size, 
+          height: size, 
+          background: `radial-gradient(circle, rgba(239,68,68,${opacity}) 0%, rgba(239,68,68,0) 70%)`,
+          borderRadius: '50%',
+          pointerEvents: 'none',
+          transform: 'translate(-50%, -50%)',
+        }} 
+      />
+    </AdvancedMarker>
+  );
+}
+
+/**
  * Vehicle icon for a nearby / assigned driver.
  */
 export function DriverMarker({
