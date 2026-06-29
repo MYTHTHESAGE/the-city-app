@@ -78,7 +78,7 @@ export function Hero() {
       />
 
       <div className="relative mx-auto grid max-w-6xl gap-10 px-5 sm:px-6 md:grid-cols-2 md:items-center md:gap-12">
-        <div className="animate-fade-up">
+        <div className="animate-fade-up min-w-0">
           <span className="glass inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium text-foreground">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             Built for Redemption City
