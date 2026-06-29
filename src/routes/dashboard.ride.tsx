@@ -21,7 +21,7 @@ import {
   rateRide,
 } from "@/lib/queries";
 import { formatDistanceToNow } from "date-fns";
-import { isPointInPolygon, parsePostgisPoint, getRoute, getDistanceMeters, type LatLng } from "@/lib/directions";
+import { isPointInPolygon, parsePostgisPoint, getRoute, calculateHaversineDistance, type LatLng } from "@/lib/directions";
 import { MapRoutePolyline, ServiceAreaPolygon } from "@/components/map/map-overlays";
 import { supabase } from "@/lib/supabase";
 
@@ -262,12 +262,11 @@ function RideRequest() {
     if (preferredDriverId && onlineDrivers) {
       const d = onlineDrivers.find((x) => x.driver_id === preferredDriverId);
       if (d) {
-        const dist = getDistanceMeters(userCoords, { lat: d.lat, lng: d.lng });
-        if (dist > 5000) {
-          const distKm = (dist / 1000).toFixed(1);
+        const distKm = calculateHaversineDistance(userCoords, { lat: d.lat, lng: d.lng });
+        if (distKm > 5) {
           if (
             !window.confirm(
-              `Driver ${d.full_name || "selected"} is ${distKm}km away and might take a while to arrive. Are you sure you want to request this driver?`
+              `Driver ${d.full_name || "selected"} is ${distKm.toFixed(1)}km away and might take a while to arrive. Are you sure you want to request this driver?`
             )
           ) {
             return;
